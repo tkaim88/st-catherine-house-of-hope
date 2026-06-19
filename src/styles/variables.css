@@ -1,0 +1,19 @@
+:root {
+  --color-primary: #2563eb;
+  --color-primary-dark: #1e40af;
+  --color-secondary: #f97316;
+  --color-dark: #172033;
+  --color-text: #334155;
+  --color-muted: #64748b;
+  --color-light: #f8fafc;
+  --color-white: #ffffff;
+  --color-border: #e2e8f0;
+
+  --shadow-soft: 0 12px 30px rgba(15, 23, 42, 0.12);
+
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+
+  --container-width: 1180px;
+}

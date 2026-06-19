@@ -1,0 +1,370 @@
+{
+  "admins": [
+    {
+      "id": 1,
+      "email": "admin@stcatherinehouseofhope.org",
+      "password": "$2b$10$fbUCYw4mSDKvHFqtFw.LGuqhAycQJEuSm/bIiUmWiApc.6NEYTn1m",
+      "role": "super-admin"
+    },
+    {
+      "id": 1781855019372,
+      "email": "finance@stcatherinehouseofhope.org",
+      "password": "$2b$10$ixgkd0XsG7JQMlbC6DO7POsG3pgkFoemRRGkJiRpZYqFY7Hnts3DS",
+      "role": "staff",
+      "status": "active",
+      "createdAt": "2026-06-19T07:43:39.372Z"
+    }
+  ],
+  "volunteers": [
+    {
+      "fullName": "Thomas komora",
+      "email": "tkomoruh@gmail.com",
+      "phone": "0722594497",
+      "skills": "doctor",
+      "message": "Teach medical survival skills and tips to the children.",
+      "status": "approved",
+      "createdAt": "2026-06-17T14:36:40.776Z",
+      "id": 1
+    },
+    {
+      "fullName": "Thomas komora",
+      "email": "tkomoruh@gmail.com",
+      "phone": "0722594497",
+      "skills": "doctor",
+      "message": "teach medical survival skills to the community and children",
+      "status": "approved",
+      "createdAt": "2026-06-17T16:34:45.072Z",
+      "id": 2
+    },
+    {
+      "fullName": "maisie",
+      "email": "mmoringa@technicalmentor.sch",
+      "phone": "0700554433",
+      "skills": "Technical Mentor",
+      "message": "Teach software development and tech to the kids.",
+      "status": "approved",
+      "createdAt": "2026-06-18T02:36:48.261Z",
+      "id": 3
+    },
+    {
+      "fullName": "Aaron prius",
+      "email": "Apturi90@miscrosoft.com",
+      "phone": "+12391236504",
+      "skills": "Software Design/Architect",
+      "message": "I would love the opportunity to mentor some budding tech enthusiasts.",
+      "status": "approved",
+      "createdAt": "2026-06-18T05:20:26.654Z",
+      "id": 4
+    },
+    {
+      "fullName": "Larry Beaumont",
+      "email": "larryb@pitlab.org",
+      "phone": "+32453197832",
+      "skills": "Footballer",
+      "message": "I;d like to spend a week in kenya at your lovely Home, mentor the kids and play some ball with them.",
+      "status": "pending",
+      "createdAt": "2026-06-18T05:40:15.600Z",
+      "id": 5
+    },
+    {
+      "fullName": "Darius Gowen",
+      "email": "dg1999@yahoo.com",
+      "phone": "+44932490619",
+      "skills": "Banker",
+      "message": "I would like to visit the orphanage and mingle with the kids and sponsor one or two. Thanks",
+      "status": "approved",
+      "createdAt": "2026-06-18T05:45:05.371Z",
+      "id": 6
+    },
+    {
+      "fullName": "Erick ",
+      "email": "eriko@gmail.com",
+      "phone": "+91234724961",
+      "skills": "Graphic Designer",
+      "message": "Iwould like to donate some computers to the orphanage, to help the children in their I.T studies.",
+      "status": "pending",
+      "createdAt": "2026-06-18T18:32:30.703Z",
+      "id": 1781807550703
+    }
+  ],
+  "donations": [
+    {
+      "fullName": "craig",
+      "email": "craigslist@exp.com",
+      "currency": "USD",
+      "amount": 10000,
+      "donationType": "one-time",
+      "message": "",
+      "status": "approved",
+      "createdAt": "2026-06-17T19:55:45.987Z",
+      "id": 1
+    },
+    {
+      "fullName": "freda",
+      "email": "fredasimmon@yahoo.uk",
+      "currency": "GBP",
+      "amount": 12000,
+      "donationType": "monthly",
+      "message": "",
+      "status": "approved",
+      "createdAt": "2026-06-17T20:08:38.631Z",
+      "id": 2
+    },
+    {
+      "fullName": "molly",
+      "email": "pinecresthillschool@uni.org",
+      "currency": "KSH",
+      "amount": 30000,
+      "donationType": "monthly",
+      "message": "Thanks for this opportunity!",
+      "status": "approved",
+      "createdAt": "2026-06-17T20:15:19.929Z",
+      "id": 3
+    },
+    {
+      "fullName": "peter",
+      "email": "petervanderbilt@gmail.com",
+      "currency": "KSH",
+      "amount": 7000,
+      "donationType": "one-time",
+      "message": "For the Children's Happiness!",
+      "status": "approved",
+      "createdAt": "2026-06-18T02:59:21.350Z",
+      "id": 4
+    },
+    {
+      "fullName": "Brie Patrick",
+      "email": "aspirelifeacademy@school.edu",
+      "currency": "EUR",
+      "amount": 2000,
+      "donationType": "one-time",
+      "message": "A small token to carry you through. xo xo",
+      "status": "approved",
+      "createdAt": "2026-06-18T05:07:51.736Z",
+      "id": 5
+    },
+    {
+      "fullName": "Larry beaumont",
+      "email": "larryb@pitlab.org",
+      "currency": "GBP",
+      "amount": 100000,
+      "donationType": "one-time",
+      "message": "Work Hard Always. The sky is the limit!",
+      "status": "pending",
+      "createdAt": "2026-06-18T05:36:56.678Z",
+      "id": 6
+    }
+  ],
+  "children": [
+    {
+      "fullName": "Kevin kinoti",
+      "age": 12,
+      "gender": "Male",
+      "school": "Sega Primary School",
+      "grade": "2",
+      "sponsor": "Mary",
+      "medicalNotes": "Health and active. No History of hereditary ailments.",
+      "status": "Active",
+      "createdAt": "2026-06-17T22:42:29.858Z",
+      "id": 1,
+      "profileImage": "",
+      "dateOfBirth": "",
+      "admissionDate": "",
+      "educationNotes": "",
+      "allergies": "",
+      "bloodType": "",
+      "emergencyContact": "",
+      "biography": "",
+      "updatedAt": "2026-06-19T08:47:38.123Z"
+    },
+    {
+      "fullName": "Cynthia mkale",
+      "age": 13,
+      "gender": "Female",
+      "school": "Ng'iya Girls SEcondary School",
+      "grade": "7",
+      "sponsor": "Huey Buxter",
+      "medicalNotes": "Healthy and active. No History of recurring sickness.",
+      "status": "Active",
+      "createdAt": "2026-06-17T22:44:59.288Z",
+      "id": 2,
+      "sponsorId": 1781879056293
+    }
+  ],
+  "sponsors": [
+    {
+      "id": 1781879056293,
+      "fullName": "Huey Buxter",
+      "email": "heybux@gmail.com",
+      "phone": "+5134257890749",
+      "country": "U.S.A",
+      "profileImage": "",
+      "childId": 2,
+      "childName": "Cynthia mkale",
+      "currency": "USD",
+      "monthlyAmount": 100,
+      "notes": "",
+      "status": "Active",
+      "createdAt": "2026-06-19T14:24:16.293Z"
+    }
+  ],
+  "sponsorships": [
+    {
+      "id": 1781879056294,
+      "childId": 2,
+      "childName": "Cynthia mkale",
+      "sponsorId": 1781879056293,
+      "sponsorName": "Huey Buxter",
+      "sponsorEmail": "heybux@gmail.com",
+      "amount": 100,
+      "currency": "USD",
+      "status": "active",
+      "startDate": "2026-06-19T14:24:16.293Z"
+    }
+  ],
+  "messages": [
+    {
+      "fullName": "Gogos Amuma",
+      "email": "amumag@golan.tn",
+      "phone": "0714002058",
+      "subject": "sports games ",
+      "message": "Iam writing to inquire about the organisation of this year's Primary school games and your Institutions apllication. W",
+      "status": "unread",
+      "createdAt": "2026-06-18T00:33:28.178Z",
+      "id": 1
+    },
+    {
+      "fullName": "Adrian kip",
+      "email": "xirtamtecinc@nitfit.io",
+      "phone": "987432157",
+      "subject": "sports games ",
+      "message": "H3LL0",
+      "status": "unread",
+      "createdAt": "2026-06-18T22:20:25.293Z",
+      "id": 1781821225293
+    }
+  ],
+  "activities": [
+    {
+      "action": "Volunteer Approved",
+      "details": "maisie application was marked as approved.",
+      "createdAt": "2026-06-18T02:37:23.740Z",
+      "id": 1
+    },
+    {
+      "action": "Donation Approved",
+      "details": "craig donation of USD 10,000.00 was marked as approved.",
+      "createdAt": "2026-06-18T03:00:16.499Z",
+      "id": 2
+    },
+    {
+      "action": "Donation Approved",
+      "details": "freda donation of GBP 12,000.00 was marked as approved.",
+      "createdAt": "2026-06-18T03:00:19.751Z",
+      "id": 3
+    },
+    {
+      "action": "Donation Approved",
+      "details": "molly donation of KSH 30,000.00 was marked as approved.",
+      "createdAt": "2026-06-18T03:00:22.864Z",
+      "id": 4
+    },
+    {
+      "action": "Donation Approved",
+      "details": "peter donation of KSH 7,000.00 was marked as approved.",
+      "createdAt": "2026-06-18T03:00:26.136Z",
+      "id": 5
+    },
+    {
+      "action": "Messages Report Exported",
+      "details": "messages-report.csv was exported from the Reports Center.",
+      "createdAt": "2026-06-18T03:21:06.979Z",
+      "id": 6
+    },
+    {
+      "action": "Children Report Exported",
+      "details": "children-report.csv was exported from the Reports Center.",
+      "createdAt": "2026-06-18T03:21:14.595Z",
+      "id": 7
+    },
+    {
+      "action": "Donations Report Exported",
+      "details": "donations-report.csv was exported from the Reports Center.",
+      "createdAt": "2026-06-18T03:21:16.780Z",
+      "id": 8
+    },
+    {
+      "action": "Volunteers Report Exported",
+      "details": "volunteers-report.csv was exported from the Reports Center.",
+      "createdAt": "2026-06-18T03:21:18.609Z",
+      "id": 9
+    },
+    {
+      "action": "Volunteer Approved",
+      "details": "Aaron prius application was marked as approved.",
+      "createdAt": "2026-06-18T05:21:29.800Z",
+      "id": 10
+    },
+    {
+      "action": "Donation Approved",
+      "details": "Brie Patrick donation of EUR 2,000.00 was marked as approved.",
+      "createdAt": "2026-06-18T17:11:16.447Z",
+      "id": 11
+    },
+    {
+      "action": "Volunteer Approved",
+      "details": "Darius Gowen application was marked as approved.",
+      "createdAt": "2026-06-18T17:12:31.204Z",
+      "id": 12
+    },
+    {
+      "id": 1781815519896,
+      "action": "Backend Test",
+      "details": "Testing activity creation",
+      "createdAt": "2026-06-18T20:45:19.896Z"
+    },
+    {
+      "id": 1781856044479,
+      "action": "Admin Role Updated",
+      "details": "finance@stcatherinehouseofhope.org role was changed from finance to staff.",
+      "createdAt": "2026-06-19T08:00:44.479Z"
+    },
+    {
+      "id": 1781875463108,
+      "action": "Donor Created",
+      "details": "peter pettigrew was added as a donor.",
+      "createdAt": "2026-06-19T13:24:23.108Z"
+    },
+    {
+      "id": 1781879056293,
+      "action": "Sponsorship Created",
+      "details": "Huey Buxter was assigned to sponsor Cynthia mkale.",
+      "createdAt": "2026-06-19T14:24:16.293Z"
+    }
+  ],
+  "notifications": [
+    {
+      "type": "Volunteer Application",
+      "recipient": "dg1999@yahoo.com",
+      "message": "Hello Darius Gowen, your volunteer application has been approved.",
+      "status": "not sent",
+      "createdAt": "2026-06-18T17:12:31.217Z",
+      "id": 1
+    }
+  ],
+  "donors": [
+    {
+      "id": 1781875463108,
+      "fullName": "peter pettigrew",
+      "email": "peterpetty@hogwarts.ch",
+      "phone": "+4458325640",
+      "country": "United Kingdom",
+      "profileImage": "",
+      "preferredCurrency": "KSH",
+      "donorType": "individual",
+      "notes": "",
+      "status": "active",
+      "createdAt": "2026-06-19T13:24:23.108Z"
+    }
+  ]
+}
