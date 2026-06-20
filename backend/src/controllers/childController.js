@@ -1,32 +1,39 @@
-import fs from 'fs/promises'
-import path from 'path'
+import { pool } from '../config/database.js'
 
-const databasePath = path.join(process.cwd(), '..', 'db.json')
-
-async function readDatabase() {
-  const data = await fs.readFile(databasePath, 'utf-8')
-  return JSON.parse(data)
-}
-
-async function writeDatabase(data) {
-  await fs.writeFile(databasePath, JSON.stringify(data, null, 2))
-}
-
-function createActivity(database, action, details) {
-  const newActivity = {
-    id: Date.now(),
-    action,
-    details,
-    createdAt: new Date().toISOString(),
+function formatChild(row) {
+  return {
+    id: row.id,
+    fullName: row.full_name,
+    age: row.age,
+    gender: row.gender,
+    profileImage: row.profile_image,
+    dateOfBirth: row.date_of_birth,
+    admissionDate: row.admission_date,
+    school: row.school,
+    grade: row.grade,
+    educationNotes: row.education_notes,
+    sponsor: row.sponsor,
+    sponsorId: row.sponsor_id,
+    medicalNotes: row.medical_notes,
+    allergies: row.allergies,
+    bloodType: row.blood_type,
+    emergencyContact: row.emergency_contact,
+    biography: row.biography,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
   }
-
-  database.activities = [...(database.activities || []), newActivity]
 }
 
 export const getChildren = async (req, res) => {
   try {
-    const database = await readDatabase()
-    res.json(database.children || [])
+    const result = await pool.query(`
+      SELECT *
+      FROM children
+      ORDER BY created_at DESC
+    `)
+
+    res.json(result.rows.map(formatChild))
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Failed to load children.' })
@@ -35,18 +42,22 @@ export const getChildren = async (req, res) => {
 
 export const getChildById = async (req, res) => {
   try {
-    const database = await readDatabase()
     const childId = Number(req.params.id)
 
-    const child = (database.children || []).find(
-      (item) => Number(item.id) === childId
+    const result = await pool.query(
+      `
+      SELECT *
+      FROM children
+      WHERE id = $1
+      `,
+      [childId]
     )
 
-    if (!child) {
+    if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Child not found.' })
     }
 
-    res.json(child)
+    res.json(formatChild(result.rows[0]))
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Failed to load child.' })
@@ -55,49 +66,87 @@ export const getChildById = async (req, res) => {
 
 export const createChild = async (req, res) => {
   try {
-    const database = await readDatabase()
+    const {
+      fullName,
+      age,
+      gender,
+      profileImage,
+      dateOfBirth,
+      admissionDate,
+      school,
+      grade,
+      educationNotes,
+      sponsor,
+      sponsorId,
+      medicalNotes,
+      allergies,
+      bloodType,
+      emergencyContact,
+      biography,
+      status,
+    } = req.body
 
-    const newChild = {
-      id: Date.now(),
-      fullName: req.body.fullName,
-      age: Number(req.body.age),
-      gender: req.body.gender || 'Female',
-      profileImage: req.body.profileImage || '',
-      dateOfBirth: req.body.dateOfBirth || '',
-      admissionDate: req.body.admissionDate || '',
-      school: req.body.school || '',
-      grade: req.body.grade || '',
-      educationNotes: req.body.educationNotes || '',
-      sponsor: req.body.sponsor || 'None',
-      sponsorId: req.body.sponsorId || null,
-      medicalNotes: req.body.medicalNotes || '',
-      allergies: req.body.allergies || '',
-      bloodType: req.body.bloodType || '',
-      emergencyContact: req.body.emergencyContact || '',
-      biography: req.body.biography || '',
-      status: req.body.status || 'Active',
-      createdAt: new Date().toISOString(),
-    }
-
-    if (!newChild.fullName || !newChild.age || !newChild.school || !newChild.grade) {
+    if (!fullName || !age || !school || !grade) {
       return res.status(400).json({
         message: 'Full name, age, school, and grade are required.',
       })
     }
 
-    database.children = [...(database.children || []), newChild]
+    const id = Date.now()
 
-    createActivity(
-      database,
-      'Child Record Created',
-      `${newChild.fullName} was added to children records.`
+    const result = await pool.query(
+      `
+      INSERT INTO children (
+        id,
+        full_name,
+        age,
+        gender,
+        profile_image,
+        date_of_birth,
+        admission_date,
+        school,
+        grade,
+        education_notes,
+        sponsor,
+        sponsor_id,
+        medical_notes,
+        allergies,
+        blood_type,
+        emergency_contact,
+        biography,
+        status
+      )
+      VALUES (
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,
+        $11,$12,$13,$14,$15,$16,$17,$18
+      )
+      RETURNING *
+      `,
+      [
+        id,
+        fullName,
+        Number(age),
+        gender || 'Female',
+        profileImage || '',
+        dateOfBirth || null,
+        admissionDate || null,
+        school || '',
+        grade || '',
+        educationNotes || '',
+        sponsor || 'None',
+        sponsorId || null,
+        medicalNotes || '',
+        allergies || '',
+        bloodType || '',
+        emergencyContact || '',
+        biography || '',
+        status || 'Active',
+      ]
     )
-
-    await writeDatabase(database)
 
     res.status(201).json({
       message: 'Child record created successfully.',
-      data: newChild,
+      data: formatChild(result.rows[0]),
     })
   } catch (error) {
     console.error(error)
@@ -107,46 +156,94 @@ export const createChild = async (req, res) => {
 
 export const updateChild = async (req, res) => {
   try {
-    const database = await readDatabase()
     const childId = Number(req.params.id)
 
-    const children = database.children || []
-    const childExists = children.some((child) => Number(child.id) === childId)
+    const existingChild = await pool.query(
+      `
+      SELECT *
+      FROM children
+      WHERE id = $1
+      `,
+      [childId]
+    )
 
-    if (!childExists) {
+    if (existingChild.rows.length === 0) {
       return res.status(404).json({ message: 'Child not found.' })
     }
 
-    database.children = children.map((child) =>
-      Number(child.id) === childId
-        ? {
-            ...child,
-            ...req.body,
-            age:
-              req.body.age !== undefined
-                ? Number(req.body.age)
-                : child.age,
-            sponsor: req.body.sponsor || child.sponsor || 'None',
-            updatedAt: new Date().toISOString(),
-          }
-        : child
-    )
+    const currentChild = formatChild(existingChild.rows[0])
 
-    const updatedChild = database.children.find(
-      (child) => Number(child.id) === childId
-    )
+    const updatedChild = {
+      fullName: req.body.fullName ?? currentChild.fullName,
+      age: req.body.age !== undefined ? Number(req.body.age) : currentChild.age,
+      gender: req.body.gender ?? currentChild.gender,
+      profileImage: req.body.profileImage ?? currentChild.profileImage,
+      dateOfBirth: req.body.dateOfBirth ?? currentChild.dateOfBirth,
+      admissionDate: req.body.admissionDate ?? currentChild.admissionDate,
+      school: req.body.school ?? currentChild.school,
+      grade: req.body.grade ?? currentChild.grade,
+      educationNotes: req.body.educationNotes ?? currentChild.educationNotes,
+      sponsor: req.body.sponsor ?? currentChild.sponsor ?? 'None',
+      sponsorId: req.body.sponsorId ?? currentChild.sponsorId,
+      medicalNotes: req.body.medicalNotes ?? currentChild.medicalNotes,
+      allergies: req.body.allergies ?? currentChild.allergies,
+      bloodType: req.body.bloodType ?? currentChild.bloodType,
+      emergencyContact:
+        req.body.emergencyContact ?? currentChild.emergencyContact,
+      biography: req.body.biography ?? currentChild.biography,
+      status: req.body.status ?? currentChild.status,
+    }
 
-    createActivity(
-      database,
-      'Child Record Updated',
-      `${updatedChild.fullName} record was updated.`
+    const result = await pool.query(
+      `
+      UPDATE children
+      SET
+        full_name = $1,
+        age = $2,
+        gender = $3,
+        profile_image = $4,
+        date_of_birth = $5,
+        admission_date = $6,
+        school = $7,
+        grade = $8,
+        education_notes = $9,
+        sponsor = $10,
+        sponsor_id = $11,
+        medical_notes = $12,
+        allergies = $13,
+        blood_type = $14,
+        emergency_contact = $15,
+        biography = $16,
+        status = $17,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $18
+      RETURNING *
+      `,
+      [
+        updatedChild.fullName,
+        updatedChild.age,
+        updatedChild.gender,
+        updatedChild.profileImage,
+        updatedChild.dateOfBirth || null,
+        updatedChild.admissionDate || null,
+        updatedChild.school,
+        updatedChild.grade,
+        updatedChild.educationNotes,
+        updatedChild.sponsor,
+        updatedChild.sponsorId,
+        updatedChild.medicalNotes,
+        updatedChild.allergies,
+        updatedChild.bloodType,
+        updatedChild.emergencyContact,
+        updatedChild.biography,
+        updatedChild.status,
+        childId,
+      ]
     )
-
-    await writeDatabase(database)
 
     res.json({
       message: 'Child record updated successfully.',
-      data: updatedChild,
+      data: formatChild(result.rows[0]),
     })
   } catch (error) {
     console.error(error)
@@ -156,30 +253,25 @@ export const updateChild = async (req, res) => {
 
 export const deleteChild = async (req, res) => {
   try {
-    const database = await readDatabase()
     const childId = Number(req.params.id)
 
-    const child = (database.children || []).find(
-      (item) => Number(item.id) === childId
+    const result = await pool.query(
+      `
+      DELETE FROM children
+      WHERE id = $1
+      RETURNING *
+      `,
+      [childId]
     )
 
-    if (!child) {
+    if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Child not found.' })
     }
 
-    database.children = (database.children || []).filter(
-      (item) => Number(item.id) !== childId
-    )
-
-    createActivity(
-      database,
-      'Child Record Deleted',
-      `${child.fullName} was removed from children records.`
-    )
-
-    await writeDatabase(database)
-
-    res.json({ message: 'Child record deleted successfully.' })
+    res.json({
+      message: 'Child record deleted successfully.',
+      data: formatChild(result.rows[0]),
+    })
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Failed to delete child record.' })
