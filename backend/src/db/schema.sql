@@ -30,3 +30,20 @@ CREATE TABLE IF NOT EXISTS children (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS sponsors (
+  id BIGINT PRIMARY KEY,
+  full_name VARCHAR(255) NOT NULL,
+  email VARCHAR(255),
+  phone VARCHAR(100),
+  country VARCHAR(100),
+  profile_image TEXT,
+  child_id BIGINT,
+  child_name VARCHAR(255),
+  currency VARCHAR(20) DEFAULT 'KSH',
+  monthly_amount NUMERIC(12, 2),
+  notes TEXT,
+  status VARCHAR(50) DEFAULT 'Active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

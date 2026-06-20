@@ -1,48 +1,41 @@
-import fs from 'fs/promises'
-import path from 'path'
+import { pool } from '../config/database.js'
 
-const databasePath = path.join(process.cwd(), '..', 'db.json')
-
-async function readDatabase() {
-  const data = await fs.readFile(databasePath, 'utf-8')
-  return JSON.parse(data)
-}
-
-async function writeDatabase(data) {
-  await fs.writeFile(databasePath, JSON.stringify(data, null, 2))
-}
-
-function createActivity(database, action, details) {
-  const newActivity = {
-    id: Date.now(),
-    action,
-    details,
-    createdAt: new Date().toISOString(),
+function formatSponsor(row) {
+  return {
+    id: row.id,
+    fullName: row.full_name,
+    email: row.email,
+    phone: row.phone,
+    country: row.country,
+    profileImage: row.profile_image,
+    childId: row.child_id,
+    childName: row.child_name,
+    currency: row.currency,
+    monthlyAmount: Number(row.monthly_amount || 0),
+    notes: row.notes,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
   }
-
-  database.activities = [...(database.activities || []), newActivity]
 }
 
 export const getSponsors = async (req, res) => {
   try {
-    const database = await readDatabase()
+    const result = await pool.query(`
+      SELECT *
+      FROM sponsors
+      ORDER BY created_at DESC
+    `)
 
-    res.json(database.sponsors || [])
+    res.json(result.rows.map(formatSponsor))
   } catch (error) {
     console.error(error)
-
-    res.status(500).json({
-      message: 'Failed to load sponsors.',
-    })
+    res.status(500).json({ message: 'Failed to load sponsors.' })
   }
 }
 
 export const createSponsor = async (req, res) => {
   try {
-    const database = await readDatabase()
-    const children = database.children || []
-    const sponsors = database.sponsors || []
-
     const {
       fullName,
       email,
@@ -65,9 +58,16 @@ export const createSponsor = async (req, res) => {
     let selectedChild = null
 
     if (childId) {
-      selectedChild = children.find(
-        (child) => Number(child.id) === Number(childId)
+      const childResult = await pool.query(
+        `
+        SELECT *
+        FROM children
+        WHERE id = $1
+        `,
+        [childId]
       )
+
+      selectedChild = childResult.rows[0]
 
       if (!selectedChild) {
         return res.status(404).json({
@@ -82,156 +82,189 @@ export const createSponsor = async (req, res) => {
       }
     }
 
-    const newSponsor = {
-      id: Date.now(),
-      fullName,
-      email,
-      phone: phone || '',
-      country: country || '',
-      profileImage: profileImage || '',
-      childId: selectedChild ? Number(selectedChild.id) : null,
-      childName: selectedChild ? selectedChild.fullName : 'Unassigned',
-      currency: currency || 'KSH',
-      monthlyAmount: Number(monthlyAmount),
-      notes: notes || '',
-      status: status || 'Active',
-      createdAt: new Date().toISOString(),
-    }
+    const id = Date.now()
 
-    database.sponsors = [...sponsors, newSponsor]
+    const sponsorResult = await pool.query(
+      `
+      INSERT INTO sponsors (
+        id,
+        full_name,
+        email,
+        phone,
+        country,
+        profile_image,
+        child_id,
+        child_name,
+        currency,
+        monthly_amount,
+        notes,
+        status
+      )
+      VALUES (
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12
+      )
+      RETURNING *
+      `,
+      [
+        id,
+        fullName,
+        email,
+        phone || '',
+        country || '',
+        profileImage || '',
+        selectedChild ? selectedChild.id : null,
+        selectedChild ? selectedChild.full_name : 'Unassigned',
+        currency || 'KSH',
+        Number(monthlyAmount),
+        notes || '',
+        status || 'Active',
+      ]
+    )
+
+    const newSponsor = sponsorResult.rows[0]
 
     if (selectedChild) {
-      const sponsorshipRecord = {
-        id: Date.now() + 1,
-        childId: Number(selectedChild.id),
-        childName: selectedChild.fullName,
-        sponsorId: newSponsor.id,
-        sponsorName: newSponsor.fullName,
-        sponsorEmail: newSponsor.email,
-        amount: Number(monthlyAmount),
-        currency: currency || 'KSH',
-        status: 'active',
-        startDate: new Date().toISOString(),
-      }
-
-      database.sponsorships = [
-        ...(database.sponsorships || []),
-        sponsorshipRecord,
-      ]
-
-      database.children = children.map((child) =>
-        Number(child.id) === Number(selectedChild.id)
-          ? {
-              ...child,
-              sponsor: newSponsor.fullName,
-              sponsorId: newSponsor.id,
-            }
-          : child
-      )
-
-      createActivity(
-        database,
-        'Sponsorship Created',
-        `${newSponsor.fullName} was assigned to sponsor ${selectedChild.fullName}.`
-      )
-    } else {
-      createActivity(
-        database,
-        'Sponsor Created',
-        `${newSponsor.fullName} was added as a sponsor.`
+      await pool.query(
+        `
+        UPDATE children
+        SET sponsor = $1,
+            sponsor_id = $2,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = $3
+        `,
+        [newSponsor.full_name, newSponsor.id, selectedChild.id]
       )
     }
-
-    await writeDatabase(database)
 
     res.status(201).json({
       message: 'Sponsor created successfully.',
-      data: newSponsor,
+      data: formatSponsor(newSponsor),
     })
   } catch (error) {
     console.error(error)
-
-    res.status(500).json({
-      message: 'Failed to create sponsor.',
-    })
+    res.status(500).json({ message: 'Failed to create sponsor.' })
   }
 }
 
 export const updateSponsor = async (req, res) => {
   try {
-    const database = await readDatabase()
     const sponsorId = Number(req.params.id)
 
-    const sponsors = database.sponsors || []
-    const sponsor = sponsors.find((item) => Number(item.id) === sponsorId)
+    const existingSponsorResult = await pool.query(
+      `
+      SELECT *
+      FROM sponsors
+      WHERE id = $1
+      `,
+      [sponsorId]
+    )
 
-    if (!sponsor) {
+    if (existingSponsorResult.rows.length === 0) {
       return res.status(404).json({
         message: 'Sponsor not found.',
       })
     }
 
-    database.sponsors = sponsors.map((item) =>
-      Number(item.id) === sponsorId
-        ? {
-            ...item,
-            ...req.body,
-            monthlyAmount:
-              req.body.monthlyAmount !== undefined
-                ? Number(req.body.monthlyAmount)
-                : item.monthlyAmount,
-            updatedAt: new Date().toISOString(),
-          }
-        : item
+    const currentSponsor = formatSponsor(existingSponsorResult.rows[0])
+
+    const updatedSponsor = {
+      fullName: req.body.fullName ?? currentSponsor.fullName,
+      email: req.body.email ?? currentSponsor.email,
+      phone: req.body.phone ?? currentSponsor.phone,
+      country: req.body.country ?? currentSponsor.country,
+      profileImage: req.body.profileImage ?? currentSponsor.profileImage,
+      currency: req.body.currency ?? currentSponsor.currency,
+      monthlyAmount:
+        req.body.monthlyAmount !== undefined
+          ? Number(req.body.monthlyAmount)
+          : currentSponsor.monthlyAmount,
+      notes: req.body.notes ?? currentSponsor.notes,
+      status: req.body.status ?? currentSponsor.status,
+    }
+
+    const result = await pool.query(
+      `
+      UPDATE sponsors
+      SET
+        full_name = $1,
+        email = $2,
+        phone = $3,
+        country = $4,
+        profile_image = $5,
+        currency = $6,
+        monthly_amount = $7,
+        notes = $8,
+        status = $9,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $10
+      RETURNING *
+      `,
+      [
+        updatedSponsor.fullName,
+        updatedSponsor.email,
+        updatedSponsor.phone,
+        updatedSponsor.country,
+        updatedSponsor.profileImage,
+        updatedSponsor.currency,
+        updatedSponsor.monthlyAmount,
+        updatedSponsor.notes,
+        updatedSponsor.status,
+        sponsorId,
+      ]
     )
 
-    const updatedSponsor = database.sponsors.find(
-      (item) => Number(item.id) === sponsorId
+    await pool.query(
+      `
+      UPDATE children
+      SET sponsor = $1,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE sponsor_id = $2
+      `,
+      [updatedSponsor.fullName, sponsorId]
     )
-
-    createActivity(
-      database,
-      'Sponsor Updated',
-      `${updatedSponsor.fullName} sponsor profile was updated.`
-    )
-
-    await writeDatabase(database)
 
     res.json({
       message: 'Sponsor updated successfully.',
-      data: updatedSponsor,
+      data: formatSponsor(result.rows[0]),
     })
   } catch (error) {
     console.error(error)
-
-    res.status(500).json({
-      message: 'Failed to update sponsor.',
-    })
+    res.status(500).json({ message: 'Failed to update sponsor.' })
   }
 }
 
 export const assignSponsorToChild = async (req, res) => {
   try {
-    const database = await readDatabase()
     const sponsorId = Number(req.params.id)
     const childId = Number(req.body.childId)
 
-    const sponsors = database.sponsors || []
-    const children = database.children || []
+    const sponsorResult = await pool.query(
+      `
+      SELECT *
+      FROM sponsors
+      WHERE id = $1
+      `,
+      [sponsorId]
+    )
 
-    const sponsor = sponsors.find((item) => Number(item.id) === sponsorId)
-    const child = children.find((item) => Number(item.id) === childId)
+    const childResult = await pool.query(
+      `
+      SELECT *
+      FROM children
+      WHERE id = $1
+      `,
+      [childId]
+    )
+
+    const sponsor = sponsorResult.rows[0]
+    const child = childResult.rows[0]
 
     if (!sponsor) {
-      return res.status(404).json({
-        message: 'Sponsor not found.',
-      })
+      return res.status(404).json({ message: 'Sponsor not found.' })
     }
 
     if (!child) {
-      return res.status(404).json({
-        message: 'Child not found.',
-      })
+      return res.status(404).json({ message: 'Child not found.' })
     }
 
     if (child.sponsor && child.sponsor !== 'None') {
@@ -240,117 +273,78 @@ export const assignSponsorToChild = async (req, res) => {
       })
     }
 
-    database.sponsors = sponsors.map((item) =>
-      Number(item.id) === sponsorId
-        ? {
-            ...item,
-            childId: Number(child.id),
-            childName: child.fullName,
-            updatedAt: new Date().toISOString(),
-          }
-        : item
+    const updatedSponsorResult = await pool.query(
+      `
+      UPDATE sponsors
+      SET child_id = $1,
+          child_name = $2,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $3
+      RETURNING *
+      `,
+      [child.id, child.full_name, sponsor.id]
     )
 
-    database.children = children.map((item) =>
-      Number(item.id) === childId
-        ? {
-            ...item,
-            sponsor: sponsor.fullName,
-            sponsorId: sponsor.id,
-            updatedAt: new Date().toISOString(),
-          }
-        : item
+    await pool.query(
+      `
+      UPDATE children
+      SET sponsor = $1,
+          sponsor_id = $2,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $3
+      `,
+      [sponsor.full_name, sponsor.id, child.id]
     )
-
-    const sponsorshipRecord = {
-      id: Date.now(),
-      childId: Number(child.id),
-      childName: child.fullName,
-      sponsorId: sponsor.id,
-      sponsorName: sponsor.fullName,
-      sponsorEmail: sponsor.email,
-      amount: Number(sponsor.monthlyAmount),
-      currency: sponsor.currency,
-      status: 'active',
-      startDate: new Date().toISOString(),
-    }
-
-    database.sponsorships = [...(database.sponsorships || []), sponsorshipRecord]
-
-    createActivity(
-      database,
-      'Sponsor Assigned',
-      `${sponsor.fullName} was assigned to sponsor ${child.fullName}.`
-    )
-
-    await writeDatabase(database)
 
     res.json({
       message: 'Sponsor assigned to child successfully.',
-      data: sponsorshipRecord,
+      data: formatSponsor(updatedSponsorResult.rows[0]),
     })
   } catch (error) {
     console.error(error)
-
-    res.status(500).json({
-      message: 'Failed to assign sponsor.',
-    })
+    res.status(500).json({ message: 'Failed to assign sponsor.' })
   }
 }
 
 export const deleteSponsor = async (req, res) => {
   try {
-    const database = await readDatabase()
     const sponsorId = Number(req.params.id)
 
-    const sponsors = database.sponsors || []
-    const sponsor = sponsors.find((item) => Number(item.id) === sponsorId)
+    const sponsorResult = await pool.query(
+      `
+      DELETE FROM sponsors
+      WHERE id = $1
+      RETURNING *
+      `,
+      [sponsorId]
+    )
 
-    if (!sponsor) {
+    if (sponsorResult.rows.length === 0) {
       return res.status(404).json({
         message: 'Sponsor not found.',
       })
     }
 
-    database.sponsors = sponsors.filter((item) => Number(item.id) !== sponsorId)
+    const deletedSponsor = sponsorResult.rows[0]
 
-    database.children = (database.children || []).map((child) =>
-      Number(child.sponsorId) === sponsorId || child.sponsor === sponsor.fullName
-        ? {
-            ...child,
-            sponsor: 'None',
-            sponsorId: null,
-            updatedAt: new Date().toISOString(),
-          }
-        : child
+    await pool.query(
+      `
+      UPDATE children
+      SET sponsor = 'None',
+          sponsor_id = NULL,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE sponsor_id = $1
+         OR sponsor = $2
+      `,
+      [deletedSponsor.id, deletedSponsor.full_name]
     )
-
-    database.sponsorships = (database.sponsorships || []).map((record) =>
-      Number(record.sponsorId) === sponsorId && record.status === 'active'
-        ? {
-            ...record,
-            status: 'ended',
-            endDate: new Date().toISOString(),
-          }
-        : record
-    )
-
-    createActivity(
-      database,
-      'Sponsor Deleted',
-      `${sponsor.fullName} sponsor profile was deleted.`
-    )
-
-    await writeDatabase(database)
 
     res.json({
       message: 'Sponsor deleted successfully.',
+      data: formatSponsor(deletedSponsor),
     })
   } catch (error) {
     console.error(error)
-
-    res.status(500).json({
-      message: 'Failed to delete sponsor.',
-    })
+    res.status(500).json({ message: 'Failed to delete sponsor.' })
   }
 }
