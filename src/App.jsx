@@ -6,6 +6,8 @@ import Gallery from './pages/Gallery/Gallery'
 import Donate from './pages/Donate/Donate'
 import Volunteer from './pages/Volunteer/Volunteer'
 import Contact from './pages/Contact/Contact'
+import SponsorChild from './pages/SponsorChild/SponsorChild'
+import SponsorApplication from './pages/SponsorApplication/SponsorApplication'
 
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -17,6 +19,7 @@ import AdminChildren from './pages/Admin/AdminChildren'
 import AdminSponsors from './pages/Admin/AdminSponsors'
 import AdminDonors from './pages/Admin/AdminDonors'
 import AdminSponsorshipPayments from './pages/Admin/AdminSponsorshipPayments'
+import AdminSponsorshipApplications from './pages/Admin/AdminSponsorshipApplications'
 import AdminMessages from './pages/Admin/AdminMessages'
 import AdminActivities from './pages/Admin/AdminActivities'
 import AdminReports from './pages/Admin/AdminReports'
@@ -34,6 +37,11 @@ function App() {
       <Route path="/donate" element={<Donate />} />
       <Route path="/volunteer" element={<Volunteer />} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/sponsor-child/:childId" element={<SponsorChild />} />
+      <Route
+        path="/sponsor-child/:childId/apply"
+        element={<SponsorApplication />}
+      />
 
       <Route path="/admin-login" element={<AdminLogin />} />
 
@@ -87,6 +95,15 @@ function App() {
         element={
           <ProtectedRoute requiredPermission="sponsors">
             <AdminSponsors />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/sponsorship-applications"
+        element={
+          <ProtectedRoute requiredPermission="sponsorshipApplications">
+            <AdminSponsorshipApplications />
           </ProtectedRoute>
         }
       />

@@ -63,7 +63,7 @@ function AdminChildren() {
   async function fetchChildrenAndSponsors() {
     try {
       const [childrenResponse, sponsorsResponse] = await Promise.all([
-        fetch('http://localhost:3001/children'),
+        fetch('http://localhost:5000/api/children'),
         fetch('http://localhost:5000/api/sponsors'),
       ])
 
@@ -152,7 +152,7 @@ function AdminChildren() {
     }
 
     try {
-      const response = await fetch('http://localhost:3001/children', {
+      const response = await fetch('http://localhost:5000/api/children', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -186,7 +186,7 @@ function AdminChildren() {
 
     try {
       const response = await fetch(
-        `http://localhost:3001/children/${editingChild.id}`,
+        `http://localhost:5000/api/children/${editingChild.id}`,
         {
           method: 'PUT',
           headers: {
@@ -226,7 +226,7 @@ function AdminChildren() {
     if (!confirmed) return
 
     try {
-      const response = await fetch(`http://localhost:3001/children/${id}`, {
+      const response = await fetch(`http://localhost:5000/api/children/${id}`, {
         method: 'DELETE',
       })
 

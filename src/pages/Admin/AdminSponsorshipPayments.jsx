@@ -62,7 +62,7 @@ function AdminSponsorshipPayments() {
         await Promise.all([
           fetch('http://localhost:5000/api/sponsorship-payments'),
           fetch('http://localhost:5000/api/sponsors'),
-          fetch('http://localhost:3001/children'),
+          fetch('http://localhost:5000/api/children'),
         ])
 
       if (

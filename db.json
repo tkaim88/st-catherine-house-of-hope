@@ -189,6 +189,28 @@
       "createdAt": "2026-06-17T22:44:59.288Z",
       "id": 2,
       "sponsorId": 1781879056293
+    },
+    {
+      "fullName": "Sonny patrick may",
+      "age": 12,
+      "gender": "Female",
+      "profileImage": "",
+      "dateOfBirth": "2014-07-16",
+      "admissionDate": "2024-12-09",
+      "school": "Sega Primary School",
+      "grade": "7",
+      "educationNotes": "Highly focused at school thus the perfect scores. ",
+      "sponsor": "Gabby julian",
+      "medicalNotes": "Sensitive to peanuts dust and cat fur. Asthmatic",
+      "allergies": "peanuts",
+      "bloodType": "0+",
+      "emergencyContact": "Admin",
+      "biography": "She came to us from unfortunate events that are hard to describe yet she worked hard and rose again, not letting her circumstances define her!",
+      "status": "Active",
+      "createdAt": "2026-06-19T20:59:47.362Z",
+      "id": 3,
+      "sponsorId": 1781937093085,
+      "updatedAt": "2026-06-20T06:31:33.085Z"
     }
   ],
   "sponsors": [
@@ -206,6 +228,21 @@
       "notes": "",
       "status": "Active",
       "createdAt": "2026-06-19T14:24:16.293Z"
+    },
+    {
+      "id": 1781937093085,
+      "fullName": "Gabby julian",
+      "email": "gb@yahoo.com",
+      "phone": "+328456321467",
+      "country": "Brazil",
+      "profileImage": "",
+      "childId": 3,
+      "childName": "Sonny patrick may",
+      "currency": "USD",
+      "monthlyAmount": 1000,
+      "notes": "I want to be able to give back what i've been blessed with.",
+      "status": "Active",
+      "createdAt": "2026-06-20T06:31:33.085Z"
     }
   ],
   "sponsorships": [
@@ -220,6 +257,18 @@
       "currency": "USD",
       "status": "active",
       "startDate": "2026-06-19T14:24:16.293Z"
+    },
+    {
+      "id": 1781937093086,
+      "childId": 3,
+      "childName": "Sonny patrick may",
+      "sponsorId": 1781937093085,
+      "sponsorName": "Gabby julian",
+      "sponsorEmail": "gb@yahoo.com",
+      "amount": 1000,
+      "currency": "USD",
+      "status": "active",
+      "startDate": "2026-06-20T06:31:33.085Z"
     }
   ],
   "messages": [
@@ -340,6 +389,18 @@
       "action": "Sponsorship Created",
       "details": "Huey Buxter was assigned to sponsor Cynthia mkale.",
       "createdAt": "2026-06-19T14:24:16.293Z"
+    },
+    {
+      "id": 1781936948241,
+      "action": "Sponsorship Application Submitted",
+      "details": "Gabby julian applied to sponsor Sonny patrick may.",
+      "createdAt": "2026-06-20T06:29:08.241Z"
+    },
+    {
+      "id": 1781937093085,
+      "action": "Sponsorship Application Approved",
+      "details": "Gabby julian was approved to sponsor Sonny patrick may.",
+      "createdAt": "2026-06-20T06:31:33.085Z"
     }
   ],
   "notifications": [
@@ -347,7 +408,7 @@
       "type": "Volunteer Application",
       "recipient": "dg1999@yahoo.com",
       "message": "Hello Darius Gowen, your volunteer application has been approved.",
-      "status": "not sent",
+      "status": "sent",
       "createdAt": "2026-06-18T17:12:31.217Z",
       "id": 1
     }
@@ -365,6 +426,24 @@
       "notes": "",
       "status": "active",
       "createdAt": "2026-06-19T13:24:23.108Z"
+    }
+  ],
+  "sponsorshipApplications": [
+    {
+      "id": 1781936948241,
+      "childId": 3,
+      "childName": "Sonny patrick may",
+      "fullName": "Gabby julian",
+      "email": "gb@yahoo.com",
+      "phone": "+328456321467",
+      "country": "Brazil",
+      "monthlyAmount": 1000,
+      "currency": "USD",
+      "message": "I want to be able to give back what i've been blessed with.",
+      "status": "approved",
+      "createdAt": "2026-06-20T06:29:08.241Z",
+      "approvedAt": "2026-06-20T06:31:33.085Z",
+      "sponsorId": 1781937093085
     }
   ]
 }

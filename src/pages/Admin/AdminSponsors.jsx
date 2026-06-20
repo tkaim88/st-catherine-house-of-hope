@@ -92,7 +92,7 @@ function AdminSponsors() {
     try {
       const [sponsorsResponse, childrenResponse] = await Promise.all([
         fetch('http://localhost:5000/api/sponsors'),
-        fetch('http://localhost:3001/children'),
+        fetch('http://localhost:5000/api/children'),
       ])
 
       if (!sponsorsResponse.ok || !childrenResponse.ok) {

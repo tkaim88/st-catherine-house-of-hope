@@ -22,11 +22,11 @@ function AdminReports() {
         sponsorsResponse,
         messagesResponse,
       ] = await Promise.all([
-        fetch('http://localhost:3001/volunteers'),
-        fetch('http://localhost:3001/donations'),
-        fetch('http://localhost:3001/children'),
-        fetch('http://localhost:3001/sponsors'),
-        fetch('http://localhost:3001/messages'),
+        fetch('http://localhost:5000/api/volunteers'),
+        fetch('http://localhost:5000/api/donations'),
+        fetch('http://localhost:5000/api/children'),
+        fetch('http://localhost:5000/api/sponsors'),
+        fetch('http://localhost:5000/api/messages'),
       ])
 
       if (

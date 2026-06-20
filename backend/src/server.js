@@ -11,6 +11,9 @@ import adminUserRoutes from './routes/adminUserRoutes.js'
 import donorRoutes from './routes/donorRoutes.js'
 import sponsorRoutes from './routes/sponsorRoutes.js'
 import sponsorshipPaymentRoutes from './routes/sponsorshipPaymentRoutes.js'
+import sponsorshipApplicationRoutes from './routes/sponsorshipApplicationRoutes.js'
+import childRoutes from './routes/childRoutes.js'
+import notificationRoutes from './routes/notificationRoutes.js'
 
 dotenv.config()
 
@@ -25,11 +28,13 @@ app.use('/api/admin-users', adminUserRoutes)
 app.use('/api/donors', donorRoutes)
 app.use('/api/sponsors', sponsorRoutes)
 app.use('/api/sponsorship-payments', sponsorshipPaymentRoutes)
+app.use('/api/sponsorship-applications', sponsorshipApplicationRoutes)
 app.use('/api/volunteers', volunteerRoutes)
 app.use('/api/donations', donationRoutes)
 app.use('/api/activities', activityRoutes)
 app.use('/api/messages', messageRoutes)
-
+app.use('/api/children', childRoutes)
+app.use('/api/notifications', notificationRoutes)
 app.get('/', (req, res) => {
   res.json({
     message: 'St Catherine House of Hope Backend Running',
