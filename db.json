@@ -153,6 +153,19 @@
       "status": "pending",
       "createdAt": "2026-06-18T05:36:56.678Z",
       "id": 6
+    },
+    {
+      "id": 1781951124661,
+      "fullName": "Test Donor",
+      "email": "test@example.com",
+      "currency": "KSH",
+      "amount": 100,
+      "donationType": "one-time",
+      "paymentMethod": "M-Pesa",
+      "paymentReference": "MOCK-STK-1781950920238",
+      "message": "",
+      "status": "approved",
+      "createdAt": "2026-06-20T10:25:24.659Z"
     }
   ],
   "children": [
@@ -401,6 +414,18 @@
       "action": "Sponsorship Application Approved",
       "details": "Gabby julian was approved to sponsor Sonny patrick may.",
       "createdAt": "2026-06-20T06:31:33.085Z"
+    },
+    {
+      "id": 1781950920249,
+      "action": "M-Pesa Payment Initiated",
+      "details": "Test Donor initiated a mock M-Pesa payment of KSH 100.",
+      "createdAt": "2026-06-20T10:22:00.249Z"
+    },
+    {
+      "id": 1781951124659,
+      "action": "M-Pesa Payment Verified",
+      "details": "Test Donor mock M-Pesa payment of KSH 100 was verified and recorded as a donation.",
+      "createdAt": "2026-06-20T10:25:24.659Z"
     }
   ],
   "notifications": [
@@ -411,6 +436,22 @@
       "status": "sent",
       "createdAt": "2026-06-18T17:12:31.217Z",
       "id": 1
+    },
+    {
+      "id": 1781950920250,
+      "type": "Payment Initiated",
+      "recipient": "test@example.com",
+      "message": "Hello Test Donor, your M-Pesa payment request has been initiated.",
+      "status": "not sent",
+      "createdAt": "2026-06-20T10:22:00.249Z"
+    },
+    {
+      "id": 1781951124660,
+      "type": "Payment Receipt",
+      "recipient": "test@example.com",
+      "message": "Hello Test Donor, your payment of KSH 100 has been received. Thank you for supporting St Catherine House of Hope.",
+      "status": "not sent",
+      "createdAt": "2026-06-20T10:25:24.659Z"
     }
   ],
   "donors": [
@@ -444,6 +485,30 @@
       "createdAt": "2026-06-20T06:29:08.241Z",
       "approvedAt": "2026-06-20T06:31:33.085Z",
       "sponsorId": 1781937093085
+    }
+  ],
+  "payments": [
+    {
+      "id": 1781950920237,
+      "fullName": "Test Donor",
+      "email": "test@example.com",
+      "phoneNumber": "254722000000",
+      "amount": 100,
+      "currency": "KSH",
+      "paymentPurpose": "donation",
+      "paymentProvider": "mpesa",
+      "paymentMode": "mock",
+      "paymentStatus": "paid",
+      "relatedChildId": null,
+      "relatedChildName": "",
+      "sponsorId": null,
+      "donorId": null,
+      "donationType": "one-time",
+      "message": "",
+      "createdAt": "2026-06-20T10:22:00.237Z",
+      "checkoutRequestId": "MOCK-STK-1781950920238",
+      "merchantRequestId": "MOCK-MERCHANT-1781950920238",
+      "verifiedAt": "2026-06-20T10:25:24.659Z"
     }
   ]
 }
