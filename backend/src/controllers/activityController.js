@@ -1,22 +1,23 @@
-import fs from 'fs/promises'
-import path from 'path'
+import { pool } from '../config/database.js'
 
-const databasePath = path.join(process.cwd(), '..', 'db.json')
-
-async function readDatabase() {
-  const data = await fs.readFile(databasePath, 'utf-8')
-  return JSON.parse(data)
-}
-
-async function writeDatabase(data) {
-  await fs.writeFile(databasePath, JSON.stringify(data, null, 2))
+function formatActivity(row) {
+  return {
+    id: row.id,
+    action: row.action,
+    details: row.details,
+    createdAt: row.created_at,
+  }
 }
 
 export const getActivities = async (req, res) => {
   try {
-    const database = await readDatabase()
+    const result = await pool.query(`
+      SELECT *
+      FROM activities
+      ORDER BY created_at DESC
+    `)
 
-    res.json(database.activities || [])
+    res.json(result.rows.map(formatActivity))
   } catch (error) {
     console.error(error)
 
@@ -28,20 +29,24 @@ export const getActivities = async (req, res) => {
 
 export const createActivity = async (req, res) => {
   try {
-    const database = await readDatabase()
+    const id = Date.now()
+    const action = req.body.action || req.body.title || 'Activity'
+    const details = req.body.details || req.body.description || ''
 
-    const newActivity = {
-      id: Date.now(),
-      action: req.body.action || req.body.title || 'Activity',
-      details: req.body.details || req.body.description || '',
-      createdAt: new Date().toISOString(),
-    }
+    const result = await pool.query(
+      `
+      INSERT INTO activities (
+        id,
+        action,
+        details
+      )
+      VALUES ($1, $2, $3)
+      RETURNING *
+      `,
+      [id, action, details]
+    )
 
-    database.activities = [...(database.activities || []), newActivity]
-
-    await writeDatabase(database)
-
-    res.status(201).json(newActivity)
+    res.status(201).json(formatActivity(result.rows[0]))
   } catch (error) {
     console.error(error)
 

@@ -47,3 +47,27 @@ CREATE TABLE IF NOT EXISTS sponsors (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS sponsorship_payments (
+  id BIGINT PRIMARY KEY,
+  sponsor_id BIGINT,
+  sponsor_name VARCHAR(255) NOT NULL,
+  child_id BIGINT,
+  child_name VARCHAR(255) NOT NULL,
+  amount NUMERIC(12, 2) NOT NULL,
+  currency VARCHAR(20) DEFAULT 'KSH',
+  payment_method VARCHAR(100) DEFAULT 'Manual',
+  payment_reference VARCHAR(255),
+  payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  status VARCHAR(50) DEFAULT 'paid',
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS activities (
+  id BIGINT PRIMARY KEY,
+  action VARCHAR(255) NOT NULL,
+  details TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
