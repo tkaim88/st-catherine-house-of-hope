@@ -15,11 +15,29 @@ import sponsorshipApplicationRoutes from './routes/sponsorshipApplicationRoutes.
 import childRoutes from './routes/childRoutes.js'
 import notificationRoutes from './routes/notificationRoutes.js'
 import paymentRoutes from './routes/paymentRoutes.js'
+import { testDatabaseConnection } from './config/database.js'
 
 dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 5000
+
+app.get('/api/database-test', async (req, res) => {
+  try {
+    const result = await testDatabaseConnection()
+
+    res.json({
+      message: 'Database connected successfully.',
+      databaseTime: result.now,
+    })
+  } catch (error) {
+    console.error(error)
+
+    res.status(500).json({
+      message: 'Database connection failed.',
+    })
+  }
+})
 
 app.use(cors())
 app.use(express.json())

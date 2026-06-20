@@ -1,22 +1,7 @@
-import fs from 'fs/promises'
-import path from 'path'
 import bcrypt from 'bcryptjs'
+import { pool } from '../config/database.js'
 
-const databasePath = path.join(process.cwd(), '..', 'db.json')
 const SALT_ROUNDS = 10
-
-async function readDatabase() {
-  const data = await fs.readFile(databasePath, 'utf-8')
-  return JSON.parse(data)
-}
-
-async function writeDatabase(data) {
-  await fs.writeFile(databasePath, JSON.stringify(data, null, 2))
-}
-
-function isHashedPassword(password) {
-  return typeof password === 'string' && password.startsWith('$2')
-}
 
 export const loginAdmin = async (req, res) => {
   try {
@@ -28,10 +13,12 @@ export const loginAdmin = async (req, res) => {
       })
     }
 
-    const database = await readDatabase()
-    const admins = database.admins || []
+    const result = await pool.query(
+      'SELECT * FROM admin_users WHERE email = $1',
+      [email]
+    )
 
-    const adminUser = admins.find((admin) => admin.email === email)
+    const adminUser = result.rows[0]
 
     if (!adminUser) {
       return res.status(401).json({
@@ -39,30 +26,21 @@ export const loginAdmin = async (req, res) => {
       })
     }
 
-    let passwordMatches = false
-
-    if (isHashedPassword(adminUser.password)) {
-      passwordMatches = await bcrypt.compare(password, adminUser.password)
-    } else {
-      passwordMatches = adminUser.password === password
+    if (adminUser.status !== 'active') {
+      return res.status(403).json({
+        message: 'This admin account is not active.',
+      })
     }
+
+    const passwordMatches = await bcrypt.compare(
+      password,
+      adminUser.password_hash
+    )
 
     if (!passwordMatches) {
       return res.status(401).json({
         message: 'Invalid admin login details.',
       })
-    }
-
-    if (!isHashedPassword(adminUser.password)) {
-      const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS)
-
-      database.admins = admins.map((admin) =>
-        admin.email === email
-          ? { ...admin, password: hashedPassword }
-          : admin
-      )
-
-      await writeDatabase(database)
     }
 
     res.json({
@@ -99,10 +77,12 @@ export const changeAdminPassword = async (req, res) => {
       })
     }
 
-    const database = await readDatabase()
-    const admins = database.admins || []
+    const result = await pool.query(
+      'SELECT * FROM admin_users WHERE email = $1',
+      [email]
+    )
 
-    const adminUser = admins.find((admin) => admin.email === email)
+    const adminUser = result.rows[0]
 
     if (!adminUser) {
       return res.status(404).json({
@@ -110,16 +90,10 @@ export const changeAdminPassword = async (req, res) => {
       })
     }
 
-    let currentPasswordMatches = false
-
-    if (isHashedPassword(adminUser.password)) {
-      currentPasswordMatches = await bcrypt.compare(
-        currentPassword,
-        adminUser.password
-      )
-    } else {
-      currentPasswordMatches = adminUser.password === currentPassword
-    }
+    const currentPasswordMatches = await bcrypt.compare(
+      currentPassword,
+      adminUser.password_hash
+    )
 
     if (!currentPasswordMatches) {
       return res.status(401).json({
@@ -129,13 +103,14 @@ export const changeAdminPassword = async (req, res) => {
 
     const hashedNewPassword = await bcrypt.hash(newPassword, SALT_ROUNDS)
 
-    database.admins = admins.map((admin) =>
-      admin.email === email
-        ? { ...admin, password: hashedNewPassword }
-        : admin
+    await pool.query(
+      `
+      UPDATE admin_users
+      SET password_hash = $1, updated_at = CURRENT_TIMESTAMP
+      WHERE email = $2
+      `,
+      [hashedNewPassword, email]
     )
-
-    await writeDatabase(database)
 
     res.json({
       message: 'Password changed successfully.',

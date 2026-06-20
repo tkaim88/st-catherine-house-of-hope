@@ -1,43 +1,31 @@
-import fs from 'fs/promises'
-import path from 'path'
 import bcrypt from 'bcryptjs'
+import { pool } from '../config/database.js'
 
-const databasePath = path.join(process.cwd(), '..', 'db.json')
 const SALT_ROUNDS = 10
+const allowedRoles = ['super-admin', 'admin', 'staff', 'finance']
 
-async function readDatabase() {
-  const data = await fs.readFile(databasePath, 'utf-8')
-  return JSON.parse(data)
-}
-
-async function writeDatabase(data) {
-  await fs.writeFile(databasePath, JSON.stringify(data, null, 2))
-}
-
-function removePasswords(admins) {
-  return admins.map((admin) => {
-    const { password, ...safeAdmin } = admin
-    return safeAdmin
-  })
-}
-
-function createActivity(database, action, details) {
-  const newActivity = {
-    id: Date.now(),
-    action,
-    details,
-    createdAt: new Date().toISOString(),
+function formatAdmin(admin) {
+  return {
+    id: admin.id,
+    email: admin.email,
+    role: admin.role,
+    status: admin.status,
+    createdAt: admin.created_at,
+    updatedAt: admin.updated_at,
   }
-
-  database.activities = [...(database.activities || []), newActivity]
 }
 
 export const getAdminUsers = async (req, res) => {
   try {
-    const database = await readDatabase()
-    const admins = database.admins || []
+    const result = await pool.query(
+      `
+      SELECT id, email, role, status, created_at, updated_at
+      FROM admin_users
+      ORDER BY created_at DESC
+      `
+    )
 
-    res.json(removePasswords(admins))
+    res.json(result.rows.map(formatAdmin))
   } catch (error) {
     console.error(error)
 
@@ -63,51 +51,38 @@ export const createAdminUser = async (req, res) => {
       })
     }
 
-    const allowedRoles = ['super-admin', 'admin', 'staff', 'finance']
-
     if (!allowedRoles.includes(role)) {
       return res.status(400).json({
         message: 'Invalid admin role.',
       })
     }
 
-    const database = await readDatabase()
-    const admins = database.admins || []
+    const existingAdmin = await pool.query(
+      'SELECT id FROM admin_users WHERE email = $1',
+      [email]
+    )
 
-    const adminExists = admins.some((admin) => admin.email === email)
-
-    if (adminExists) {
+    if (existingAdmin.rows.length > 0) {
       return res.status(409).json({
         message: 'An admin with this email already exists.',
       })
     }
 
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS)
+    const id = Date.now()
 
-    const newAdmin = {
-      id: Date.now(),
-      email,
-      password: hashedPassword,
-      role,
-      status: 'active',
-      createdAt: new Date().toISOString(),
-    }
-
-    database.admins = [...admins, newAdmin]
-
-    createActivity(
-      database,
-      'Admin User Created',
-      `${email} was created with the ${role} role.`
+    const result = await pool.query(
+      `
+      INSERT INTO admin_users (id, email, password_hash, role, status)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING id, email, role, status, created_at, updated_at
+      `,
+      [id, email, hashedPassword, role, 'active']
     )
-
-    await writeDatabase(database)
-
-    const { password: _, ...safeAdmin } = newAdmin
 
     res.status(201).json({
       message: 'Admin user created successfully.',
-      data: safeAdmin,
+      data: formatAdmin(result.rows[0]),
     })
   } catch (error) {
     console.error(error)
@@ -123,41 +98,31 @@ export const updateAdminUserRole = async (req, res) => {
     const { id } = req.params
     const { role } = req.body
 
-    const allowedRoles = ['super-admin', 'admin', 'staff', 'finance']
-
     if (!allowedRoles.includes(role)) {
       return res.status(400).json({
         message: 'Invalid admin role.',
       })
     }
 
-    const database = await readDatabase()
-    const admins = database.admins || []
-
-    const targetAdmin = admins.find(
-      (admin) => Number(admin.id) === Number(id)
+    const result = await pool.query(
+      `
+      UPDATE admin_users
+      SET role = $1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING id, email, role, status, created_at, updated_at
+      `,
+      [role, id]
     )
 
-    if (!targetAdmin) {
+    if (result.rows.length === 0) {
       return res.status(404).json({
         message: 'Admin user not found.',
       })
     }
 
-    database.admins = admins.map((admin) =>
-      Number(admin.id) === Number(id) ? { ...admin, role } : admin
-    )
-
-    createActivity(
-      database,
-      'Admin Role Updated',
-      `${targetAdmin.email} role was changed from ${targetAdmin.role} to ${role}.`
-    )
-
-    await writeDatabase(database)
-
     res.json({
       message: 'Admin role updated successfully.',
+      data: formatAdmin(result.rows[0]),
     })
   } catch (error) {
     console.error(error)
@@ -179,37 +144,27 @@ export const resetAdminUserPassword = async (req, res) => {
       })
     }
 
-    const database = await readDatabase()
-    const admins = database.admins || []
+    const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS)
 
-    const targetAdmin = admins.find(
-      (admin) => Number(admin.id) === Number(id)
+    const result = await pool.query(
+      `
+      UPDATE admin_users
+      SET password_hash = $1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING id, email, role, status, created_at, updated_at
+      `,
+      [hashedPassword, id]
     )
 
-    if (!targetAdmin) {
+    if (result.rows.length === 0) {
       return res.status(404).json({
         message: 'Admin user not found.',
       })
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS)
-
-    database.admins = admins.map((admin) =>
-      Number(admin.id) === Number(id)
-        ? { ...admin, password: hashedPassword }
-        : admin
-    )
-
-    createActivity(
-      database,
-      'Admin Password Reset',
-      `${targetAdmin.email} password was reset by a super admin.`
-    )
-
-    await writeDatabase(database)
-
     res.json({
       message: 'Admin password reset successfully.',
+      data: formatAdmin(result.rows[0]),
     })
   } catch (error) {
     console.error(error)
@@ -224,33 +179,24 @@ export const deleteAdminUser = async (req, res) => {
   try {
     const { id } = req.params
 
-    const database = await readDatabase()
-    const admins = database.admins || []
-
-    const targetAdmin = admins.find(
-      (admin) => Number(admin.id) === Number(id)
+    const result = await pool.query(
+      `
+      DELETE FROM admin_users
+      WHERE id = $1
+      RETURNING id, email, role, status, created_at, updated_at
+      `,
+      [id]
     )
 
-    if (!targetAdmin) {
+    if (result.rows.length === 0) {
       return res.status(404).json({
         message: 'Admin user not found.',
       })
     }
 
-    database.admins = admins.filter(
-      (admin) => Number(admin.id) !== Number(id)
-    )
-
-    createActivity(
-      database,
-      'Admin User Deleted',
-      `${targetAdmin.email} admin account was deleted.`
-    )
-
-    await writeDatabase(database)
-
     res.json({
       message: 'Admin user deleted successfully.',
+      data: formatAdmin(result.rows[0]),
     })
   } catch (error) {
     console.error(error)
