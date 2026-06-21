@@ -71,3 +71,18 @@ CREATE TABLE IF NOT EXISTS activities (
   details TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS donations (
+  id BIGINT PRIMARY KEY,
+  full_name VARCHAR(255) NOT NULL,
+  email VARCHAR(255),
+  currency VARCHAR(20) DEFAULT 'KSH',
+  amount NUMERIC(12, 2) NOT NULL,
+  donation_type VARCHAR(100),
+  payment_method VARCHAR(100),
+  payment_reference VARCHAR(255),
+  message TEXT,
+  status VARCHAR(50) DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
