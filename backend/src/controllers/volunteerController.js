@@ -1,22 +1,28 @@
-import fs from 'fs/promises'
-import path from 'path'
+import { pool } from '../config/database.js'
 
-const databasePath = path.join(process.cwd(), '..', 'db.json')
-
-async function readDatabase() {
-  const data = await fs.readFile(databasePath, 'utf-8')
-  return JSON.parse(data)
-}
-
-async function writeDatabase(data) {
-  await fs.writeFile(databasePath, JSON.stringify(data, null, 2))
+function formatVolunteer(row) {
+  return {
+    id: row.id,
+    fullName: row.full_name,
+    email: row.email,
+    phone: row.phone,
+    skills: row.skills,
+    message: row.message,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
 }
 
 export const getVolunteers = async (req, res) => {
   try {
-    const database = await readDatabase()
+    const result = await pool.query(`
+      SELECT *
+      FROM volunteers
+      ORDER BY created_at DESC
+    `)
 
-    res.json(database.volunteers || [])
+    res.json(result.rows.map(formatVolunteer))
   } catch (error) {
     console.error(error)
 
@@ -28,26 +34,42 @@ export const getVolunteers = async (req, res) => {
 
 export const createVolunteer = async (req, res) => {
   try {
-    const database = await readDatabase()
+    const { fullName, email, phone, skills, message } = req.body
 
-    const newVolunteer = {
-      fullName: req.body.fullName,
-      email: req.body.email,
-      phone: req.body.phone,
-      skills: req.body.skills,
-      message: req.body.message,
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-      id: Date.now(),
+    if (!fullName || !email || !phone || !skills) {
+      return res.status(400).json({
+        message: 'Full name, email, phone, and skills are required.',
+      })
     }
 
-    database.volunteers = [...(database.volunteers || []), newVolunteer]
-
-    await writeDatabase(database)
+    const result = await pool.query(
+      `
+      INSERT INTO volunteers (
+        id,
+        full_name,
+        email,
+        phone,
+        skills,
+        message,
+        status
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7)
+      RETURNING *
+      `,
+      [
+        Date.now(),
+        fullName,
+        email,
+        phone,
+        skills,
+        message || '',
+        'pending',
+      ]
+    )
 
     res.status(201).json({
       message: 'Volunteer created successfully',
-      data: newVolunteer,
+      data: formatVolunteer(result.rows[0]),
     })
   } catch (error) {
     console.error(error)
@@ -60,7 +82,6 @@ export const createVolunteer = async (req, res) => {
 
 export const updateVolunteerStatus = async (req, res) => {
   try {
-    const database = await readDatabase()
     const volunteerId = Number(req.params.id)
     const { status } = req.body
 
@@ -72,31 +93,26 @@ export const updateVolunteerStatus = async (req, res) => {
       })
     }
 
-    const volunteerExists = database.volunteers.some(
-      (volunteer) => Number(volunteer.id) === volunteerId
+    const result = await pool.query(
+      `
+      UPDATE volunteers
+      SET status = $1,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING *
+      `,
+      [status, volunteerId]
     )
 
-    if (!volunteerExists) {
+    if (result.rows.length === 0) {
       return res.status(404).json({
         message: 'Volunteer not found',
       })
     }
 
-    database.volunteers = database.volunteers.map((volunteer) =>
-      Number(volunteer.id) === volunteerId
-        ? { ...volunteer, status }
-        : volunteer
-    )
-
-    await writeDatabase(database)
-
-    const updatedVolunteer = database.volunteers.find(
-      (volunteer) => Number(volunteer.id) === volunteerId
-    )
-
     res.json({
       message: 'Volunteer status updated successfully',
-      data: updatedVolunteer,
+      data: formatVolunteer(result.rows[0]),
     })
   } catch (error) {
     console.error(error)
@@ -109,27 +125,26 @@ export const updateVolunteerStatus = async (req, res) => {
 
 export const deleteVolunteer = async (req, res) => {
   try {
-    const database = await readDatabase()
     const volunteerId = Number(req.params.id)
 
-    const volunteerExists = database.volunteers.some(
-      (volunteer) => Number(volunteer.id) === volunteerId
+    const result = await pool.query(
+      `
+      DELETE FROM volunteers
+      WHERE id = $1
+      RETURNING *
+      `,
+      [volunteerId]
     )
 
-    if (!volunteerExists) {
+    if (result.rows.length === 0) {
       return res.status(404).json({
         message: 'Volunteer not found',
       })
     }
 
-    database.volunteers = database.volunteers.filter(
-      (volunteer) => Number(volunteer.id) !== volunteerId
-    )
-
-    await writeDatabase(database)
-
     res.json({
       message: 'Volunteer deleted successfully',
+      data: formatVolunteer(result.rows[0]),
     })
   } catch (error) {
     console.error(error)
