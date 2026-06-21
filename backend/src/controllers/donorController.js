@@ -1,33 +1,31 @@
-import fs from 'fs/promises'
-import path from 'path'
+import { pool } from '../config/database.js'
 
-const databasePath = path.join(process.cwd(), '..', 'db.json')
-
-async function readDatabase() {
-  const data = await fs.readFile(databasePath, 'utf-8')
-  return JSON.parse(data)
-}
-
-async function writeDatabase(data) {
-  await fs.writeFile(databasePath, JSON.stringify(data, null, 2))
-}
-
-function createActivity(database, action, details) {
-  const newActivity = {
-    id: Date.now(),
-    action,
-    details,
-    createdAt: new Date().toISOString(),
+function formatDonor(row) {
+  return {
+    id: row.id,
+    fullName: row.full_name,
+    email: row.email,
+    phone: row.phone,
+    country: row.country,
+    profileImage: row.profile_image,
+    preferredCurrency: row.preferred_currency,
+    donorType: row.donor_type,
+    notes: row.notes,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
   }
-
-  database.activities = [...(database.activities || []), newActivity]
 }
 
 export const getDonors = async (req, res) => {
   try {
-    const database = await readDatabase()
+    const result = await pool.query(`
+      SELECT *
+      FROM donors
+      ORDER BY created_at DESC
+    `)
 
-    res.json(database.donors || [])
+    res.json(result.rows.map(formatDonor))
   } catch (error) {
     console.error(error)
 
@@ -39,35 +37,58 @@ export const getDonors = async (req, res) => {
 
 export const createDonor = async (req, res) => {
   try {
-    const database = await readDatabase()
+    const {
+      fullName,
+      email,
+      phone,
+      country,
+      profileImage,
+      preferredCurrency,
+      donorType,
+      notes,
+      status,
+    } = req.body
 
-    const newDonor = {
-      id: Date.now(),
-      fullName: req.body.fullName,
-      email: req.body.email,
-      phone: req.body.phone || '',
-      country: req.body.country || '',
-      profileImage: req.body.profileImage || '',
-      preferredCurrency: req.body.preferredCurrency || 'KSH',
-      donorType: req.body.donorType || 'individual',
-      notes: req.body.notes || '',
-      status: req.body.status || 'active',
-      createdAt: new Date().toISOString(),
+    if (!fullName || !email) {
+      return res.status(400).json({
+        message: 'Full name and email are required.',
+      })
     }
 
-    database.donors = [...(database.donors || []), newDonor]
-
-    createActivity(
-      database,
-      'Donor Created',
-      `${newDonor.fullName} was added as a donor.`
+    const result = await pool.query(
+      `
+      INSERT INTO donors (
+        id,
+        full_name,
+        email,
+        phone,
+        country,
+        profile_image,
+        preferred_currency,
+        donor_type,
+        notes,
+        status
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+      RETURNING *
+      `,
+      [
+        Date.now(),
+        fullName,
+        email,
+        phone || '',
+        country || '',
+        profileImage || '',
+        preferredCurrency || 'KSH',
+        donorType || 'individual',
+        notes || '',
+        status || 'active',
+      ]
     )
-
-    await writeDatabase(database)
 
     res.status(201).json({
       message: 'Donor created successfully.',
-      data: newDonor,
+      data: formatDonor(result.rows[0]),
     })
   } catch (error) {
     console.error(error)
@@ -80,44 +101,72 @@ export const createDonor = async (req, res) => {
 
 export const updateDonor = async (req, res) => {
   try {
-    const database = await readDatabase()
     const donorId = Number(req.params.id)
 
-    const donorExists = (database.donors || []).some(
-      (donor) => Number(donor.id) === donorId
+    const existingDonor = await pool.query(
+      `
+      SELECT *
+      FROM donors
+      WHERE id = $1
+      `,
+      [donorId]
     )
 
-    if (!donorExists) {
+    if (existingDonor.rows.length === 0) {
       return res.status(404).json({
         message: 'Donor not found.',
       })
     }
 
-    database.donors = database.donors.map((donor) =>
-      Number(donor.id) === donorId
-        ? {
-            ...donor,
-            ...req.body,
-            updatedAt: new Date().toISOString(),
-          }
-        : donor
-    )
+    const currentDonor = formatDonor(existingDonor.rows[0])
 
-    const updatedDonor = database.donors.find(
-      (donor) => Number(donor.id) === donorId
-    )
+    const updatedDonor = {
+      fullName: req.body.fullName ?? currentDonor.fullName,
+      email: req.body.email ?? currentDonor.email,
+      phone: req.body.phone ?? currentDonor.phone,
+      country: req.body.country ?? currentDonor.country,
+      profileImage: req.body.profileImage ?? currentDonor.profileImage,
+      preferredCurrency:
+        req.body.preferredCurrency ?? currentDonor.preferredCurrency,
+      donorType: req.body.donorType ?? currentDonor.donorType,
+      notes: req.body.notes ?? currentDonor.notes,
+      status: req.body.status ?? currentDonor.status,
+    }
 
-    createActivity(
-      database,
-      'Donor Updated',
-      `${updatedDonor.fullName} donor profile was updated.`
+    const result = await pool.query(
+      `
+      UPDATE donors
+      SET
+        full_name = $1,
+        email = $2,
+        phone = $3,
+        country = $4,
+        profile_image = $5,
+        preferred_currency = $6,
+        donor_type = $7,
+        notes = $8,
+        status = $9,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $10
+      RETURNING *
+      `,
+      [
+        updatedDonor.fullName,
+        updatedDonor.email,
+        updatedDonor.phone,
+        updatedDonor.country,
+        updatedDonor.profileImage,
+        updatedDonor.preferredCurrency,
+        updatedDonor.donorType,
+        updatedDonor.notes,
+        updatedDonor.status,
+        donorId,
+      ]
     )
-
-    await writeDatabase(database)
 
     res.json({
       message: 'Donor updated successfully.',
-      data: updatedDonor,
+      data: formatDonor(result.rows[0]),
     })
   } catch (error) {
     console.error(error)
@@ -130,33 +179,26 @@ export const updateDonor = async (req, res) => {
 
 export const deleteDonor = async (req, res) => {
   try {
-    const database = await readDatabase()
     const donorId = Number(req.params.id)
 
-    const donor = (database.donors || []).find(
-      (item) => Number(item.id) === donorId
+    const result = await pool.query(
+      `
+      DELETE FROM donors
+      WHERE id = $1
+      RETURNING *
+      `,
+      [donorId]
     )
 
-    if (!donor) {
+    if (result.rows.length === 0) {
       return res.status(404).json({
         message: 'Donor not found.',
       })
     }
 
-    database.donors = database.donors.filter(
-      (item) => Number(item.id) !== donorId
-    )
-
-    createActivity(
-      database,
-      'Donor Deleted',
-      `${donor.fullName} donor profile was deleted.`
-    )
-
-    await writeDatabase(database)
-
     res.json({
       message: 'Donor deleted successfully.',
+      data: formatDonor(result.rows[0]),
     })
   } catch (error) {
     console.error(error)
