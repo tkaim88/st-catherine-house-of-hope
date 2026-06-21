@@ -135,3 +135,22 @@ CREATE TABLE IF NOT EXISTS donors (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS sponsorship_applications (
+  id BIGINT PRIMARY KEY,
+  child_id BIGINT,
+  child_name VARCHAR(255) NOT NULL,
+  full_name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  phone VARCHAR(100),
+  country VARCHAR(100),
+  monthly_amount NUMERIC(12, 2) NOT NULL,
+  currency VARCHAR(20) DEFAULT 'KSH',
+  message TEXT,
+  status VARCHAR(50) DEFAULT 'pending',
+  sponsor_id BIGINT,
+  approved_at TIMESTAMP,
+  rejected_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

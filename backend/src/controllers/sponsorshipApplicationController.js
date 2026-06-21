@@ -1,32 +1,49 @@
-import fs from 'fs/promises'
-import path from 'path'
+import { pool } from '../config/database.js'
 
-const databasePath = path.join(process.cwd(), '..', 'db.json')
-
-async function readDatabase() {
-  const data = await fs.readFile(databasePath, 'utf-8')
-  return JSON.parse(data)
-}
-
-async function writeDatabase(data) {
-  await fs.writeFile(databasePath, JSON.stringify(data, null, 2))
-}
-
-function createActivity(database, action, details) {
-  const newActivity = {
-    id: Date.now(),
-    action,
-    details,
-    createdAt: new Date().toISOString(),
+function formatApplication(row) {
+  return {
+    id: row.id,
+    childId: row.child_id,
+    childName: row.child_name,
+    fullName: row.full_name,
+    email: row.email,
+    phone: row.phone,
+    country: row.country,
+    monthlyAmount: Number(row.monthly_amount || 0),
+    currency: row.currency,
+    message: row.message,
+    status: row.status,
+    sponsorId: row.sponsor_id,
+    approvedAt: row.approved_at,
+    rejectedAt: row.rejected_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
   }
+}
 
-  database.activities = [...(database.activities || []), newActivity]
+async function createActivity(action, details) {
+  await pool.query(
+    `
+    INSERT INTO activities (
+      id,
+      action,
+      details
+    )
+    VALUES ($1, $2, $3)
+    `,
+    [Date.now(), action, details]
+  )
 }
 
 export const getSponsorshipApplications = async (req, res) => {
   try {
-    const database = await readDatabase()
-    res.json(database.sponsorshipApplications || [])
+    const result = await pool.query(`
+      SELECT *
+      FROM sponsorship_applications
+      ORDER BY created_at DESC
+    `)
+
+    res.json(result.rows.map(formatApplication))
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Failed to load sponsorship applications.' })
@@ -54,39 +71,47 @@ export const createSponsorshipApplication = async (req, res) => {
       })
     }
 
-    const database = await readDatabase()
+    const result = await pool.query(
+      `
+      INSERT INTO sponsorship_applications (
+        id,
+        child_id,
+        child_name,
+        full_name,
+        email,
+        phone,
+        country,
+        monthly_amount,
+        currency,
+        message,
+        status
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+      RETURNING *
+      `,
+      [
+        Date.now(),
+        Number(childId),
+        childName,
+        fullName,
+        email,
+        phone || '',
+        country || '',
+        Number(monthlyAmount),
+        currency || 'KSH',
+        message || '',
+        'pending',
+      ]
+    )
 
-    const newApplication = {
-      id: Date.now(),
-      childId: Number(childId),
-      childName,
-      fullName,
-      email,
-      phone: phone || '',
-      country: country || '',
-      monthlyAmount: Number(monthlyAmount),
-      currency: currency || 'KSH',
-      message: message || '',
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-    }
-
-    database.sponsorshipApplications = [
-      ...(database.sponsorshipApplications || []),
-      newApplication,
-    ]
-
-    createActivity(
-      database,
+    await createActivity(
       'Sponsorship Application Submitted',
       `${fullName} applied to sponsor ${childName}.`
     )
 
-    await writeDatabase(database)
-
     res.status(201).json({
       message: 'Sponsorship application submitted successfully.',
-      data: newApplication,
+      data: formatApplication(result.rows[0]),
     })
   } catch (error) {
     console.error(error)
@@ -95,145 +120,200 @@ export const createSponsorshipApplication = async (req, res) => {
 }
 
 export const approveSponsorshipApplication = async (req, res) => {
+  const client = await pool.connect()
+
   try {
-    const database = await readDatabase()
+    await client.query('BEGIN')
+
     const applicationId = Number(req.params.id)
 
-    const applications = database.sponsorshipApplications || []
-    const application = applications.find(
-      (item) => Number(item.id) === applicationId
+    const applicationResult = await client.query(
+      `
+      SELECT *
+      FROM sponsorship_applications
+      WHERE id = $1
+      `,
+      [applicationId]
     )
 
+    const application = applicationResult.rows[0]
+
     if (!application) {
-      return res.status(404).json({ message: 'Sponsorship application not found.' })
+      await client.query('ROLLBACK')
+      return res.status(404).json({
+        message: 'Sponsorship application not found.',
+      })
     }
 
     if (application.status === 'approved') {
-      return res.status(409).json({ message: 'Application is already approved.' })
+      await client.query('ROLLBACK')
+      return res.status(409).json({
+        message: 'Application is already approved.',
+      })
     }
 
-    const child = (database.children || []).find(
-      (item) => Number(item.id) === Number(application.childId)
+    const childResult = await client.query(
+      `
+      SELECT *
+      FROM children
+      WHERE id = $1
+      `,
+      [application.child_id]
     )
 
+    const child = childResult.rows[0]
+
     if (!child) {
-      return res.status(404).json({ message: 'Child record not found.' })
+      await client.query('ROLLBACK')
+      return res.status(404).json({
+        message: 'Child record not found.',
+      })
     }
 
     if (child.sponsor && child.sponsor !== 'None') {
+      await client.query('ROLLBACK')
       return res.status(409).json({
         message: 'This child already has a sponsor.',
       })
     }
 
-    const newSponsor = {
-      id: Date.now(),
-      fullName: application.fullName,
-      email: application.email,
-      phone: application.phone || '',
-      country: application.country || '',
-      profileImage: '',
-      childId: Number(application.childId),
-      childName: application.childName,
-      currency: application.currency || 'KSH',
-      monthlyAmount: Number(application.monthlyAmount),
-      notes: application.message || '',
-      status: 'Active',
-      createdAt: new Date().toISOString(),
-    }
+    const sponsorId = Date.now()
 
-    const sponsorshipRecord = {
-      id: Date.now() + 1,
-      childId: Number(application.childId),
-      childName: application.childName,
-      sponsorId: newSponsor.id,
-      sponsorName: newSponsor.fullName,
-      sponsorEmail: newSponsor.email,
-      amount: Number(application.monthlyAmount),
-      currency: application.currency || 'KSH',
-      status: 'active',
-      startDate: new Date().toISOString(),
-    }
-
-    database.sponsors = [...(database.sponsors || []), newSponsor]
-    database.sponsorships = [
-      ...(database.sponsorships || []),
-      sponsorshipRecord,
-    ]
-
-    database.children = (database.children || []).map((item) =>
-      Number(item.id) === Number(application.childId)
-        ? {
-            ...item,
-            sponsor: newSponsor.fullName,
-            sponsorId: newSponsor.id,
-            updatedAt: new Date().toISOString(),
-          }
-        : item
+    const sponsorResult = await client.query(
+      `
+      INSERT INTO sponsors (
+        id,
+        full_name,
+        email,
+        phone,
+        country,
+        profile_image,
+        child_id,
+        child_name,
+        currency,
+        monthly_amount,
+        notes,
+        status
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+      RETURNING *
+      `,
+      [
+        sponsorId,
+        application.full_name,
+        application.email,
+        application.phone || '',
+        application.country || '',
+        '',
+        Number(application.child_id),
+        application.child_name,
+        application.currency || 'KSH',
+        Number(application.monthly_amount),
+        application.message || '',
+        'Active',
+      ]
     )
 
-    database.sponsorshipApplications = applications.map((item) =>
-      Number(item.id) === applicationId
-        ? {
-            ...item,
-            status: 'approved',
-            approvedAt: new Date().toISOString(),
-            sponsorId: newSponsor.id,
-          }
-        : item
+    await client.query(
+      `
+      UPDATE children
+      SET sponsor = $1,
+          sponsor_id = $2,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $3
+      `,
+      [application.full_name, sponsorId, application.child_id]
     )
 
-    createActivity(
-      database,
-      'Sponsorship Application Approved',
-      `${application.fullName} was approved to sponsor ${application.childName}.`
+    const updatedApplication = await client.query(
+      `
+      UPDATE sponsorship_applications
+      SET status = 'approved',
+          approved_at = CURRENT_TIMESTAMP,
+          sponsor_id = $1,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING *
+      `,
+      [sponsorId, applicationId]
     )
 
-    await writeDatabase(database)
+    await client.query(
+      `
+      INSERT INTO activities (
+        id,
+        action,
+        details
+      )
+      VALUES ($1, $2, $3)
+      `,
+      [
+        Date.now() + 1,
+        'Sponsorship Application Approved',
+        `${application.full_name} was approved to sponsor ${application.child_name}.`,
+      ]
+    )
+
+    await client.query('COMMIT')
 
     res.json({
       message: 'Sponsorship application approved successfully.',
-      data: newSponsor,
+      data: {
+        application: formatApplication(updatedApplication.rows[0]),
+        sponsor: sponsorResult.rows[0],
+      },
     })
   } catch (error) {
+    await client.query('ROLLBACK')
     console.error(error)
     res.status(500).json({ message: 'Failed to approve sponsorship application.' })
+  } finally {
+    client.release()
   }
 }
 
 export const rejectSponsorshipApplication = async (req, res) => {
   try {
-    const database = await readDatabase()
     const applicationId = Number(req.params.id)
 
-    const applications = database.sponsorshipApplications || []
-    const application = applications.find(
-      (item) => Number(item.id) === applicationId
+    const applicationResult = await pool.query(
+      `
+      SELECT *
+      FROM sponsorship_applications
+      WHERE id = $1
+      `,
+      [applicationId]
     )
+
+    const application = applicationResult.rows[0]
 
     if (!application) {
-      return res.status(404).json({ message: 'Sponsorship application not found.' })
+      return res.status(404).json({
+        message: 'Sponsorship application not found.',
+      })
     }
 
-    database.sponsorshipApplications = applications.map((item) =>
-      Number(item.id) === applicationId
-        ? {
-            ...item,
-            status: 'rejected',
-            rejectedAt: new Date().toISOString(),
-          }
-        : item
+    const result = await pool.query(
+      `
+      UPDATE sponsorship_applications
+      SET status = 'rejected',
+          rejected_at = CURRENT_TIMESTAMP,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+      RETURNING *
+      `,
+      [applicationId]
     )
 
-    createActivity(
-      database,
+    await createActivity(
       'Sponsorship Application Rejected',
-      `${application.fullName} application to sponsor ${application.childName} was rejected.`
+      `${application.full_name} application to sponsor ${application.child_name} was rejected.`
     )
 
-    await writeDatabase(database)
-
-    res.json({ message: 'Sponsorship application rejected successfully.' })
+    res.json({
+      message: 'Sponsorship application rejected successfully.',
+      data: formatApplication(result.rows[0]),
+    })
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Failed to reject sponsorship application.' })
@@ -242,30 +322,34 @@ export const rejectSponsorshipApplication = async (req, res) => {
 
 export const deleteSponsorshipApplication = async (req, res) => {
   try {
-    const database = await readDatabase()
     const applicationId = Number(req.params.id)
 
-    const application = (database.sponsorshipApplications || []).find(
-      (item) => Number(item.id) === applicationId
+    const result = await pool.query(
+      `
+      DELETE FROM sponsorship_applications
+      WHERE id = $1
+      RETURNING *
+      `,
+      [applicationId]
     )
 
-    if (!application) {
-      return res.status(404).json({ message: 'Sponsorship application not found.' })
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        message: 'Sponsorship application not found.',
+      })
     }
 
-    database.sponsorshipApplications = (
-      database.sponsorshipApplications || []
-    ).filter((item) => Number(item.id) !== applicationId)
+    const deletedApplication = result.rows[0]
 
-    createActivity(
-      database,
+    await createActivity(
       'Sponsorship Application Deleted',
-      `${application.fullName} application for ${application.childName} was deleted.`
+      `${deletedApplication.full_name} application for ${deletedApplication.child_name} was deleted.`
     )
 
-    await writeDatabase(database)
-
-    res.json({ message: 'Sponsorship application deleted successfully.' })
+    res.json({
+      message: 'Sponsorship application deleted successfully.',
+      data: formatApplication(deletedApplication),
+    })
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Failed to delete sponsorship application.' })
