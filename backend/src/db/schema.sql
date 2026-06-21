@@ -154,3 +154,43 @@ CREATE TABLE IF NOT EXISTS sponsorship_applications (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS payments (
+  id BIGINT PRIMARY KEY,
+  full_name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  phone_number VARCHAR(100) NOT NULL,
+  amount NUMERIC(12, 2) NOT NULL,
+  currency VARCHAR(20) DEFAULT 'KSH',
+  payment_purpose VARCHAR(100) DEFAULT 'donation',
+  payment_provider VARCHAR(100) DEFAULT 'mpesa',
+  payment_mode VARCHAR(100) DEFAULT 'mock',
+  payment_status VARCHAR(50) DEFAULT 'pending',
+  related_child_id BIGINT,
+  related_child_name VARCHAR(255),
+  sponsor_id BIGINT,
+  donor_id BIGINT,
+  donation_type VARCHAR(100) DEFAULT 'one-time',
+  message TEXT,
+  checkout_request_id VARCHAR(255),
+  merchant_request_id VARCHAR(255),
+  verified_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS sponsorships (
+  id BIGINT PRIMARY KEY,
+  child_id BIGINT,
+  child_name VARCHAR(255) NOT NULL,
+  sponsor_id BIGINT,
+  sponsor_name VARCHAR(255) NOT NULL,
+  sponsor_email VARCHAR(255),
+  amount NUMERIC(12, 2) NOT NULL,
+  currency VARCHAR(20) DEFAULT 'KSH',
+  status VARCHAR(50) DEFAULT 'active',
+  start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  end_date TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

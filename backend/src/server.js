@@ -16,6 +16,7 @@ import childRoutes from './routes/childRoutes.js'
 import notificationRoutes from './routes/notificationRoutes.js'
 import paymentRoutes from './routes/paymentRoutes.js'
 import { testDatabaseConnection } from './config/database.js'
+import sponsorshipRoutes from './routes/sponsorshipRoutes.js'
 
 dotenv.config()
 
@@ -55,6 +56,7 @@ app.use('/api/messages', messageRoutes)
 app.use('/api/children', childRoutes)
 app.use('/api/notifications', notificationRoutes)
 app.use('/api/payments', paymentRoutes)
+app.use('/api/sponsorships', sponsorshipRoutes)
 app.get('/', (req, res) => {
   res.json({
     message: 'St Catherine House of Hope Backend Running',
