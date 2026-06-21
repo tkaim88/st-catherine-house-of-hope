@@ -1,22 +1,28 @@
-import fs from 'fs/promises'
-import path from 'path'
+import { pool } from '../config/database.js'
 
-const databasePath = path.join(process.cwd(), '..', 'db.json')
-
-async function readDatabase() {
-  const data = await fs.readFile(databasePath, 'utf-8')
-  return JSON.parse(data)
-}
-
-async function writeDatabase(data) {
-  await fs.writeFile(databasePath, JSON.stringify(data, null, 2))
+function formatMessage(row) {
+  return {
+    id: row.id,
+    fullName: row.full_name,
+    email: row.email,
+    phone: row.phone,
+    subject: row.subject,
+    message: row.message,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
 }
 
 export const getMessages = async (req, res) => {
   try {
-    const database = await readDatabase()
+    const result = await pool.query(`
+      SELECT *
+      FROM messages
+      ORDER BY created_at DESC
+    `)
 
-    res.json(database.messages || [])
+    res.json(result.rows.map(formatMessage))
   } catch (error) {
     console.error(error)
 
@@ -28,26 +34,42 @@ export const getMessages = async (req, res) => {
 
 export const createMessage = async (req, res) => {
   try {
-    const database = await readDatabase()
+    const { fullName, email, phone, subject, message } = req.body
 
-    const newMessage = {
-      fullName: req.body.fullName,
-      email: req.body.email,
-      phone: req.body.phone || '',
-      subject: req.body.subject,
-      message: req.body.message,
-      status: 'unread',
-      createdAt: new Date().toISOString(),
-      id: Date.now(),
+    if (!fullName || !email || !subject || !message) {
+      return res.status(400).json({
+        message: 'Full name, email, subject, and message are required.',
+      })
     }
 
-    database.messages = [...(database.messages || []), newMessage]
-
-    await writeDatabase(database)
+    const result = await pool.query(
+      `
+      INSERT INTO messages (
+        id,
+        full_name,
+        email,
+        phone,
+        subject,
+        message,
+        status
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7)
+      RETURNING *
+      `,
+      [
+        Date.now(),
+        fullName,
+        email,
+        phone || '',
+        subject,
+        message,
+        'unread',
+      ]
+    )
 
     res.status(201).json({
       message: 'Message created successfully',
-      data: newMessage,
+      data: formatMessage(result.rows[0]),
     })
   } catch (error) {
     console.error(error)
@@ -60,7 +82,6 @@ export const createMessage = async (req, res) => {
 
 export const updateMessageStatus = async (req, res) => {
   try {
-    const database = await readDatabase()
     const messageId = Number(req.params.id)
     const { status } = req.body
 
@@ -72,29 +93,26 @@ export const updateMessageStatus = async (req, res) => {
       })
     }
 
-    const messageExists = database.messages.some(
-      (message) => Number(message.id) === messageId
+    const result = await pool.query(
+      `
+      UPDATE messages
+      SET status = $1,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING *
+      `,
+      [status, messageId]
     )
 
-    if (!messageExists) {
+    if (result.rows.length === 0) {
       return res.status(404).json({
         message: 'Message not found',
       })
     }
 
-    database.messages = database.messages.map((message) =>
-      Number(message.id) === messageId ? { ...message, status } : message
-    )
-
-    await writeDatabase(database)
-
-    const updatedMessage = database.messages.find(
-      (message) => Number(message.id) === messageId
-    )
-
     res.json({
       message: 'Message status updated successfully',
-      data: updatedMessage,
+      data: formatMessage(result.rows[0]),
     })
   } catch (error) {
     console.error(error)
@@ -107,27 +125,26 @@ export const updateMessageStatus = async (req, res) => {
 
 export const deleteMessage = async (req, res) => {
   try {
-    const database = await readDatabase()
     const messageId = Number(req.params.id)
 
-    const messageExists = database.messages.some(
-      (message) => Number(message.id) === messageId
+    const result = await pool.query(
+      `
+      DELETE FROM messages
+      WHERE id = $1
+      RETURNING *
+      `,
+      [messageId]
     )
 
-    if (!messageExists) {
+    if (result.rows.length === 0) {
       return res.status(404).json({
         message: 'Message not found',
       })
     }
 
-    database.messages = database.messages.filter(
-      (message) => Number(message.id) !== messageId
-    )
-
-    await writeDatabase(database)
-
     res.json({
       message: 'Message deleted successfully',
+      data: formatMessage(result.rows[0]),
     })
   } catch (error) {
     console.error(error)
