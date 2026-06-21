@@ -1,21 +1,26 @@
-import fs from 'fs/promises'
-import path from 'path'
+import { pool } from '../config/database.js'
 
-const databasePath = path.join(process.cwd(), '..', 'db.json')
-
-async function readDatabase() {
-  const data = await fs.readFile(databasePath, 'utf-8')
-  return JSON.parse(data)
-}
-
-async function writeDatabase(data) {
-  await fs.writeFile(databasePath, JSON.stringify(data, null, 2))
+function formatNotification(row) {
+  return {
+    id: row.id,
+    type: row.type,
+    recipient: row.recipient,
+    message: row.message,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
 }
 
 export const getNotifications = async (req, res) => {
   try {
-    const database = await readDatabase()
-    res.json(database.notifications || [])
+    const result = await pool.query(`
+      SELECT *
+      FROM notifications
+      ORDER BY created_at DESC
+    `)
+
+    res.json(result.rows.map(formatNotification))
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Failed to load notifications.' })
@@ -24,27 +29,30 @@ export const getNotifications = async (req, res) => {
 
 export const createNotification = async (req, res) => {
   try {
-    const database = await readDatabase()
-
-    const newNotification = {
-      id: Date.now(),
-      type: req.body.type || 'General Notification',
-      recipient: req.body.recipient || '',
-      message: req.body.message || '',
-      status: req.body.status || 'not sent',
-      createdAt: new Date().toISOString(),
-    }
-
-    database.notifications = [
-      ...(database.notifications || []),
-      newNotification,
-    ]
-
-    await writeDatabase(database)
+    const result = await pool.query(
+      `
+      INSERT INTO notifications (
+        id,
+        type,
+        recipient,
+        message,
+        status
+      )
+      VALUES ($1,$2,$3,$4,$5)
+      RETURNING *
+      `,
+      [
+        Date.now(),
+        req.body.type || 'General Notification',
+        req.body.recipient || '',
+        req.body.message || '',
+        req.body.status || 'not sent',
+      ]
+    )
 
     res.status(201).json({
       message: 'Notification created successfully.',
-      data: newNotification,
+      data: formatNotification(result.rows[0]),
     })
   } catch (error) {
     console.error(error)
@@ -54,37 +62,54 @@ export const createNotification = async (req, res) => {
 
 export const updateNotification = async (req, res) => {
   try {
-    const database = await readDatabase()
     const notificationId = Number(req.params.id)
 
-    const notificationExists = (database.notifications || []).some(
-      (notification) => Number(notification.id) === notificationId
+    const existingNotification = await pool.query(
+      `
+      SELECT *
+      FROM notifications
+      WHERE id = $1
+      `,
+      [notificationId]
     )
 
-    if (!notificationExists) {
+    if (existingNotification.rows.length === 0) {
       return res.status(404).json({ message: 'Notification not found.' })
     }
 
-    database.notifications = (database.notifications || []).map(
-      (notification) =>
-        Number(notification.id) === notificationId
-          ? {
-              ...notification,
-              ...req.body,
-              updatedAt: new Date().toISOString(),
-            }
-          : notification
-    )
+    const currentNotification = formatNotification(existingNotification.rows[0])
 
-    const updatedNotification = database.notifications.find(
-      (notification) => Number(notification.id) === notificationId
-    )
+    const updatedNotification = {
+      type: req.body.type ?? currentNotification.type,
+      recipient: req.body.recipient ?? currentNotification.recipient,
+      message: req.body.message ?? currentNotification.message,
+      status: req.body.status ?? currentNotification.status,
+    }
 
-    await writeDatabase(database)
+    const result = await pool.query(
+      `
+      UPDATE notifications
+      SET
+        type = $1,
+        recipient = $2,
+        message = $3,
+        status = $4,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $5
+      RETURNING *
+      `,
+      [
+        updatedNotification.type,
+        updatedNotification.recipient,
+        updatedNotification.message,
+        updatedNotification.status,
+        notificationId,
+      ]
+    )
 
     res.json({
       message: 'Notification updated successfully.',
-      data: updatedNotification,
+      data: formatNotification(result.rows[0]),
     })
   } catch (error) {
     console.error(error)
@@ -94,24 +119,25 @@ export const updateNotification = async (req, res) => {
 
 export const deleteNotification = async (req, res) => {
   try {
-    const database = await readDatabase()
     const notificationId = Number(req.params.id)
 
-    const notification = (database.notifications || []).find(
-      (item) => Number(item.id) === notificationId
+    const result = await pool.query(
+      `
+      DELETE FROM notifications
+      WHERE id = $1
+      RETURNING *
+      `,
+      [notificationId]
     )
 
-    if (!notification) {
+    if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Notification not found.' })
     }
 
-    database.notifications = (database.notifications || []).filter(
-      (item) => Number(item.id) !== notificationId
-    )
-
-    await writeDatabase(database)
-
-    res.json({ message: 'Notification deleted successfully.' })
+    res.json({
+      message: 'Notification deleted successfully.',
+      data: formatNotification(result.rows[0]),
+    })
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Failed to delete notification.' })
