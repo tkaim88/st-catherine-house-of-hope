@@ -48,7 +48,7 @@ function AdminSettings() {
       const adminUser = JSON.parse(localStorage.getItem('adminUser'))
 
       const response = await fetch(
-        'http://localhost:5000/api/auth/change-password',
+        'https://st-catherine-house-of-hope-api.onrender.com/api/auth/change-password',
         {
           method: 'PATCH',
           headers: {

@@ -51,7 +51,7 @@ function AdminDonors() {
 
   async function fetchDonors() {
     try {
-      const response = await fetch('http://localhost:5000/api/donors')
+      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/donors')
 
       if (!response.ok) {
         throw new Error('Failed to load donors')
@@ -127,7 +127,7 @@ function AdminDonors() {
 
   async function createDonor() {
     try {
-      const response = await fetch('http://localhost:5000/api/donors', {
+      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/donors', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -155,7 +155,7 @@ function AdminDonors() {
   async function updateDonor() {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/donors/${editingDonor.id}`,
+        `https://st-catherine-house-of-hope-api.onrender.com/api/donors/${editingDonor.id}`,
         {
           method: 'PATCH',
           headers: {
@@ -195,7 +195,7 @@ function AdminDonors() {
     if (!confirmed) return
 
     try {
-      const response = await fetch(`http://localhost:5000/api/donors/${id}`, {
+      const response = await fetch(`https://st-catherine-house-of-hope-api.onrender.com/api/donors/${id}`, {
         method: 'DELETE',
       })
 

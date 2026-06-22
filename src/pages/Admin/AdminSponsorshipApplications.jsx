@@ -41,7 +41,7 @@ function AdminSponsorshipApplications() {
   async function fetchApplications() {
     try {
       const response = await fetch(
-        'http://localhost:5000/api/sponsorship-applications'
+        'https://st-catherine-house-of-hope-api.onrender.com/api/sponsorship-applications'
       )
 
       if (!response.ok) {
@@ -61,7 +61,7 @@ function AdminSponsorshipApplications() {
   async function approveApplication(id) {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/sponsorship-applications/${id}/approve`,
+        `https://st-catherine-house-of-hope-api.onrender.com/api/sponsorship-applications/${id}/approve`,
         {
           method: 'PATCH',
         }
@@ -98,7 +98,7 @@ function AdminSponsorshipApplications() {
   async function rejectApplication(id) {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/sponsorship-applications/${id}/reject`,
+        `https://st-catherine-house-of-hope-api.onrender.com/api/sponsorship-applications/${id}/reject`,
         {
           method: 'PATCH',
         }
@@ -140,7 +140,7 @@ function AdminSponsorshipApplications() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/sponsorship-applications/${id}`,
+        `https://st-catherine-house-of-hope-api.onrender.com/api/sponsorship-applications/${id}`,
         {
           method: 'DELETE',
         }

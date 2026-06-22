@@ -39,7 +39,7 @@ function Donate() {
     setErrorMessage('')
 
     try {
-      const response = await fetch('http://localhost:5000/api/donations', {
+      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/donations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

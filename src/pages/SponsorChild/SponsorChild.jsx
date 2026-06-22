@@ -12,7 +12,7 @@ function SponsorChild() {
 
   async function fetchChild() {
     try {
-      const response = await fetch(`http://localhost:5000/api/children/${childId}`)
+      const response = await fetch(`https://st-catherine-house-of-hope-api.onrender.com/api/children/${childId}`)
 
       if (!response.ok) {
         throw new Error('Child profile not found')

@@ -10,7 +10,7 @@ function Gallery() {
 
   async function fetchChildren() {
     try {
-      const response = await fetch('http://localhost:5000/api/children')
+      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/children')
 
       if (!response.ok) {
         throw new Error('Failed to load children')

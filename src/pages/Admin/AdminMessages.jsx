@@ -42,7 +42,7 @@ function AdminMessages() {
 
   async function fetchMessages() {
     try {
-      const response = await fetch('http://localhost:5000/api/messages')
+      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/messages')
 
       if (!response.ok) {
         throw new Error('Failed to load messages')
@@ -65,7 +65,7 @@ function AdminMessages() {
 
   async function updateMessageStatus(id, status) {
     try {
-      const response = await fetch(`http://localhost:5000/api/messages/${id}`, {
+      const response = await fetch(`https://st-catherine-house-of-hope-api.onrender.com/api/messages/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -100,7 +100,7 @@ function AdminMessages() {
     if (!confirmed) return
 
     try {
-      const response = await fetch(`http://localhost:5000/api/messages/${id}`, {
+      const response = await fetch(`https://st-catherine-house-of-hope-api.onrender.com/api/messages/${id}`, {
         method: 'DELETE',
       })
 

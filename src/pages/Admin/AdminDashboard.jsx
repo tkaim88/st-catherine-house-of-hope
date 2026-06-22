@@ -74,11 +74,11 @@ function AdminDashboard() {
         messagesResponse,
         donorsResponse,
       ] = await Promise.all([
-        fetch('http://localhost:5000/api/volunteers'),
-        fetch('http://localhost:5000/api/donations'),
-        fetch('http://localhost:5000/api/children'),
-        fetch('http://localhost:5000/api/messages'),
-        fetch('http://localhost:5000/api/donors'),
+        fetch('https://st-catherine-house-of-hope-api.onrender.com/api/volunteers'),
+        fetch('https://st-catherine-house-of-hope-api.onrender.com/api/donations'),
+        fetch('https://st-catherine-house-of-hope-api.onrender.com/api/children'),
+        fetch('https://st-catherine-house-of-hope-api.onrender.com/api/messages'),
+        fetch('https://st-catherine-house-of-hope-api.onrender.com/api/donors'),
       ])
 
       if (

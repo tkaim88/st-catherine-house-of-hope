@@ -32,7 +32,7 @@ function Volunteer() {
     setErrorMessage('')
 
     try {
-      const response = await fetch('http://localhost:5000/api/volunteers', {
+      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/volunteers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -91,8 +91,8 @@ function AdminSponsors() {
   async function fetchData() {
     try {
       const [sponsorsResponse, childrenResponse] = await Promise.all([
-        fetch('http://localhost:5000/api/sponsors'),
-        fetch('http://localhost:5000/api/children'),
+        fetch('https://st-catherine-house-of-hope-api.onrender.com/api/sponsors'),
+        fetch('https://st-catherine-house-of-hope-api.onrender.com/api/children'),
       ])
 
       if (!sponsorsResponse.ok || !childrenResponse.ok) {
@@ -169,7 +169,7 @@ function AdminSponsors() {
 
   async function createSponsor() {
     try {
-      const response = await fetch('http://localhost:5000/api/sponsors', {
+      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/sponsors', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -215,7 +215,7 @@ function AdminSponsors() {
   async function updateSponsor() {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/sponsors/${editingSponsor.id}`,
+        `https://st-catherine-house-of-hope-api.onrender.com/api/sponsors/${editingSponsor.id}`,
         {
           method: 'PATCH',
           headers: {
@@ -268,7 +268,7 @@ function AdminSponsors() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/sponsors/${sponsor.id}/assign-child`,
+        `https://st-catherine-house-of-hope-api.onrender.com/api/sponsors/${sponsor.id}/assign-child`,
         {
           method: 'PATCH',
           headers: {
@@ -334,7 +334,7 @@ function AdminSponsors() {
     if (!confirmed) return
 
     try {
-      const response = await fetch(`http://localhost:5000/api/sponsors/${id}`, {
+      const response = await fetch(`https://st-catherine-house-of-hope-api.onrender.com/api/sponsors/${id}`, {
         method: 'DELETE',
       })
 

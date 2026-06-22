@@ -85,7 +85,7 @@ function AdminUsers() {
         return
       }
 
-      const response = await fetch('http://localhost:5000/api/admin-users', {
+      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/admin-users', {
         headers: getAuthHeaders(),
       })
 
@@ -123,7 +123,7 @@ function AdminUsers() {
     setSuccessMessage('')
 
     try {
-      const response = await fetch('http://localhost:5000/api/admin-users', {
+      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/admin-users', {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(newAdmin),
@@ -163,7 +163,7 @@ function AdminUsers() {
   async function updateAdminRole(id, role) {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/admin-users/${id}/role`,
+        `https://st-catherine-house-of-hope-api.onrender.com/api/admin-users/${id}/role`,
         {
           method: 'PATCH',
           headers: getAuthHeaders(),
@@ -218,7 +218,7 @@ function AdminUsers() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/admin-users/${resetPasswordData.adminId}/password`,
+        `https://st-catherine-house-of-hope-api.onrender.com/api/admin-users/${resetPasswordData.adminId}/password`,
         {
           method: 'PATCH',
           headers: getAuthHeaders(),
@@ -272,7 +272,7 @@ function AdminUsers() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/admin-users/${id}`,
+        `https://st-catherine-house-of-hope-api.onrender.com/api/admin-users/${id}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),

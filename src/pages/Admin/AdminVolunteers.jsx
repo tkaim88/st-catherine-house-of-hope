@@ -64,7 +64,7 @@ function AdminVolunteers() {
 
   async function fetchVolunteers() {
     try {
-      const response = await fetch('http://localhost:5000/api/volunteers')
+      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/volunteers')
 
       if (!response.ok) {
         throw new Error('Failed to load volunteer applications')
@@ -84,7 +84,7 @@ function AdminVolunteers() {
     const volunteer = volunteers.find((item) => item.id === id)
 
     try {
-      const response = await fetch(`http://localhost:5000/api/volunteers/${id}`, {
+      const response = await fetch(`https://st-catherine-house-of-hope-api.onrender.com/api/volunteers/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -141,7 +141,7 @@ function AdminVolunteers() {
     const volunteer = volunteers.find((item) => item.id === id)
 
     try {
-      const response = await fetch(`http://localhost:5000/api/volunteers/${id}`, {
+      const response = await fetch(`https://st-catherine-house-of-hope-api.onrender.com/api/volunteers/${id}`, {
         method: 'DELETE',
       })
 
@@ -180,7 +180,7 @@ function AdminVolunteers() {
     try {
       await Promise.all(
         volunteers.map((volunteer) =>
-          fetch(`http://localhost:5000/api/volunteers/${volunteer.id}`, {
+          fetch(`https://st-catherine-house-of-hope-api.onrender.com/api/volunteers/${volunteer.id}`, {
             method: 'DELETE',
           })
         )

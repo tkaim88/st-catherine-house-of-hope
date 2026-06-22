@@ -1,6 +1,6 @@
 export async function createNotification(notification) {
   try {
-    await fetch('http://localhost:5000/api/notifications', {
+    await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/notifications', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

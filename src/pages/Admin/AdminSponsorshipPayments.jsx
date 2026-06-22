@@ -60,9 +60,9 @@ function AdminSponsorshipPayments() {
     try {
       const [paymentsResponse, sponsorsResponse, childrenResponse] =
         await Promise.all([
-          fetch('http://localhost:5000/api/sponsorship-payments'),
-          fetch('http://localhost:5000/api/sponsors'),
-          fetch('http://localhost:5000/api/children'),
+          fetch('https://st-catherine-house-of-hope-api.onrender.com/api/sponsorship-payments'),
+          fetch('https://st-catherine-house-of-hope-api.onrender.com/api/sponsors'),
+          fetch('https://st-catherine-house-of-hope-api.onrender.com/api/children'),
         ])
 
       if (
@@ -166,7 +166,7 @@ function AdminSponsorshipPayments() {
 
     try {
       const response = await fetch(
-        'http://localhost:5000/api/sponsorship-payments',
+        'https://st-catherine-house-of-hope-api.onrender.com/api/sponsorship-payments',
         {
           method: 'POST',
           headers: {
@@ -211,7 +211,7 @@ function AdminSponsorshipPayments() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/sponsorship-payments/${editingPayment.id}`,
+        `https://st-catherine-house-of-hope-api.onrender.com/api/sponsorship-payments/${editingPayment.id}`,
         {
           method: 'PATCH',
           headers: {
@@ -264,7 +264,7 @@ function AdminSponsorshipPayments() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/sponsorship-payments/${id}`,
+        `https://st-catherine-house-of-hope-api.onrender.com/api/sponsorship-payments/${id}`,
         {
           method: 'DELETE',
         }

@@ -1,6 +1,6 @@
 export async function createActivity(action, details) {
   try {
-    await fetch('http://localhost:5000/api/activities', {
+    await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/activities', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

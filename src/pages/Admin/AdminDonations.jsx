@@ -95,7 +95,7 @@ function AdminDonations() {
 
   async function fetchDonations() {
     try {
-      const response = await fetch('http://localhost:5000/api/donations')
+      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/donations')
 
       if (!response.ok) {
         throw new Error('Failed to load donations')
@@ -116,7 +116,7 @@ function AdminDonations() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/donations/${id}`,
+        `https://st-catherine-house-of-hope-api.onrender.com/api/donations/${id}`,
         {
           method: 'PATCH',
           headers: {
@@ -163,7 +163,7 @@ function AdminDonations() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/donations/${id}`,
+        `https://st-catherine-house-of-hope-api.onrender.com/api/donations/${id}`,
         {
           method: 'DELETE',
         }

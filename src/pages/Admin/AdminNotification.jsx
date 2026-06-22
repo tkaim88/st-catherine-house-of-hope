@@ -35,7 +35,7 @@ function AdminNotifications() {
 
   async function fetchNotifications() {
     try {
-      const response = await fetch('http://localhost:5000/api/notifications')
+      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/notifications')
 
       if (!response.ok) {
         throw new Error('Failed to load notifications')
@@ -59,7 +59,7 @@ function AdminNotifications() {
   async function updateNotificationStatus(id, status) {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/notifications/${id}`,
+        `https://st-catherine-house-of-hope-api.onrender.com/api/notifications/${id}`,
         {
           method: 'PATCH',
           headers: {
@@ -95,7 +95,7 @@ function AdminNotifications() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/notifications/${id}`,
+        `https://st-catherine-house-of-hope-api.onrender.com/api/notifications/${id}`,
         {
           method: 'DELETE',
         }
