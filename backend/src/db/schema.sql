@@ -66,10 +66,25 @@ CREATE TABLE IF NOT EXISTS sponsorship_payments (
 );
 
 CREATE TABLE IF NOT EXISTS activities (
-  id BIGINT PRIMARY KEY,
-  action VARCHAR(255) NOT NULL,
-  details TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    id BIGINT PRIMARY KEY,
+
+    action VARCHAR(255) NOT NULL,
+    details TEXT,
+
+    actor_id BIGINT,
+    actor_email VARCHAR(255),
+    actor_role VARCHAR(50),
+
+    module VARCHAR(100),
+    entity_type VARCHAR(100),
+    entity_id BIGINT,
+
+    old_value JSONB,
+    new_value JSONB,
+
+    ip_address VARCHAR(100),
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS donations (
@@ -194,3 +209,42 @@ CREATE TABLE IF NOT EXISTS sponsorships (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE admin_users
+ADD COLUMN IF NOT EXISTS full_name VARCHAR(255);
+
+ALTER TABLE admin_users
+ADD COLUMN IF NOT EXISTS last_login TIMESTAMP;
+
+ALTER TABLE admin_users
+ADD COLUMN IF NOT EXISTS failed_login_attempts INTEGER DEFAULT 0;
+
+ALTER TABLE admin_users
+ADD COLUMN IF NOT EXISTS locked_until TIMESTAMP;
+
+ALTER TABLE activities
+ADD COLUMN IF NOT EXISTS actor_id BIGINT;
+
+ALTER TABLE activities
+ADD COLUMN IF NOT EXISTS actor_email VARCHAR(255);
+
+ALTER TABLE activities
+ADD COLUMN IF NOT EXISTS actor_role VARCHAR(50);
+
+ALTER TABLE activities
+ADD COLUMN IF NOT EXISTS module VARCHAR(100);
+
+ALTER TABLE activities
+ADD COLUMN IF NOT EXISTS entity_type VARCHAR(100);
+
+ALTER TABLE activities
+ADD COLUMN IF NOT EXISTS entity_id BIGINT;
+
+ALTER TABLE activities
+ADD COLUMN IF NOT EXISTS old_value JSONB;
+
+ALTER TABLE activities
+ADD COLUMN IF NOT EXISTS new_value JSONB;
+
+ALTER TABLE activities
+ADD COLUMN IF NOT EXISTS ip_address VARCHAR(100);

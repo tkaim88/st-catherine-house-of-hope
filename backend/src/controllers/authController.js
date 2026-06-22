@@ -1,7 +1,35 @@
 import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
 import { pool } from '../config/database.js'
 
 const SALT_ROUNDS = 10
+const MAX_FAILED_ATTEMPTS = 5
+const LOCK_TIME_MINUTES = 15
+
+function createToken(adminUser) {
+  return jwt.sign(
+    {
+      id: adminUser.id,
+      email: adminUser.email,
+      role: adminUser.role,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: process.env.JWT_EXPIRES_IN || '8h',
+    }
+  )
+}
+
+function formatAdmin(adminUser) {
+  return {
+    id: adminUser.id,
+    fullName: adminUser.full_name,
+    email: adminUser.email,
+    role: adminUser.role,
+    status: adminUser.status,
+    lastLogin: adminUser.last_login,
+  }
+}
 
 export const loginAdmin = async (req, res) => {
   try {
@@ -14,7 +42,11 @@ export const loginAdmin = async (req, res) => {
     }
 
     const result = await pool.query(
-      'SELECT * FROM admin_users WHERE email = $1',
+      `
+      SELECT *
+      FROM admin_users
+      WHERE email = $1
+      `,
       [email]
     )
 
@@ -32,25 +64,85 @@ export const loginAdmin = async (req, res) => {
       })
     }
 
+    if (
+      adminUser.locked_until &&
+      new Date(adminUser.locked_until) > new Date()
+    ) {
+      return res.status(423).json({
+        message:
+          'This account is temporarily locked because of too many failed login attempts. Try again later.',
+      })
+    }
+
     const passwordMatches = await bcrypt.compare(
       password,
       adminUser.password_hash
     )
 
     if (!passwordMatches) {
+      const failedAttempts = Number(adminUser.failed_login_attempts || 0) + 1
+
+      if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
+        await pool.query(
+          `
+          UPDATE admin_users
+          SET failed_login_attempts = $1,
+              locked_until = NOW() + INTERVAL '${LOCK_TIME_MINUTES} minutes',
+              updated_at = CURRENT_TIMESTAMP
+          WHERE id = $2
+          `,
+          [failedAttempts, adminUser.id]
+        )
+
+        return res.status(423).json({
+          message:
+            'Too many failed login attempts. This account has been temporarily locked.',
+        })
+      }
+
+      await pool.query(
+        `
+        UPDATE admin_users
+        SET failed_login_attempts = $1,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = $2
+        `,
+        [failedAttempts, adminUser.id]
+      )
+
       return res.status(401).json({
         message: 'Invalid admin login details.',
       })
     }
 
+    await pool.query(
+      `
+      UPDATE admin_users
+      SET failed_login_attempts = 0,
+          locked_until = NULL,
+          last_login = CURRENT_TIMESTAMP,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+      `,
+      [adminUser.id]
+    )
+
+    const freshAdminResult = await pool.query(
+      `
+      SELECT *
+      FROM admin_users
+      WHERE id = $1
+      `,
+      [adminUser.id]
+    )
+
+    const freshAdmin = freshAdminResult.rows[0]
+    const token = createToken(freshAdmin)
+
     res.json({
       message: 'Login successful',
-      admin: {
-        id: adminUser.id,
-        email: adminUser.email,
-        role: adminUser.role,
-      },
-      token: 'temporary-admin-token',
+      admin: formatAdmin(freshAdmin),
+      token,
     })
   } catch (error) {
     console.error(error)
@@ -63,9 +155,10 @@ export const loginAdmin = async (req, res) => {
 
 export const changeAdminPassword = async (req, res) => {
   try {
-    const { email, currentPassword, newPassword } = req.body
+    const adminEmail = req.admin?.email || req.body.email
+    const { currentPassword, newPassword } = req.body
 
-    if (!email || !currentPassword || !newPassword) {
+    if (!adminEmail || !currentPassword || !newPassword) {
       return res.status(400).json({
         message: 'Email, current password, and new password are required.',
       })
@@ -78,8 +171,12 @@ export const changeAdminPassword = async (req, res) => {
     }
 
     const result = await pool.query(
-      'SELECT * FROM admin_users WHERE email = $1',
-      [email]
+      `
+      SELECT *
+      FROM admin_users
+      WHERE email = $1
+      `,
+      [adminEmail]
     )
 
     const adminUser = result.rows[0]
@@ -106,10 +203,11 @@ export const changeAdminPassword = async (req, res) => {
     await pool.query(
       `
       UPDATE admin_users
-      SET password_hash = $1, updated_at = CURRENT_TIMESTAMP
+      SET password_hash = $1,
+          updated_at = CURRENT_TIMESTAMP
       WHERE email = $2
       `,
-      [hashedNewPassword, email]
+      [hashedNewPassword, adminEmail]
     )
 
     res.json({

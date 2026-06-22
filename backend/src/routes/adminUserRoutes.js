@@ -6,13 +6,43 @@ import {
   resetAdminUserPassword,
   updateAdminUserRole,
 } from '../controllers/adminUserController.js'
+import {
+  authenticateAdmin,
+  authorizeRoles,
+} from '../middleware/authMiddleware.js'
 
 const router = express.Router()
 
-router.get('/', getAdminUsers)
-router.post('/', createAdminUser)
-router.patch('/:id/role', updateAdminUserRole)
-router.patch('/:id/password', resetAdminUserPassword)
-router.delete('/:id', deleteAdminUser)
+router.use(authenticateAdmin)
+
+router.get(
+  '/',
+  authorizeRoles('super-admin'),
+  getAdminUsers
+)
+
+router.post(
+  '/',
+  authorizeRoles('super-admin'),
+  createAdminUser
+)
+
+router.patch(
+  '/:id/role',
+  authorizeRoles('super-admin'),
+  updateAdminUserRole
+)
+
+router.patch(
+  '/:id/password',
+  authorizeRoles('super-admin'),
+  resetAdminUserPassword
+)
+
+router.delete(
+  '/:id',
+  authorizeRoles('super-admin'),
+  deleteAdminUser
+)
 
 export default router

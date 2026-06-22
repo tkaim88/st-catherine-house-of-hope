@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
 
 function AdminUsers() {
+  const navigate = useNavigate()
+
   const [adminUsers, setAdminUsers] = useState([])
   const [newAdmin, setNewAdmin] = useState({
+    fullName: '',
     email: '',
     password: '',
     role: 'admin',
@@ -20,6 +24,25 @@ function AdminUsers() {
   const [successMessage, setSuccessMessage] = useState('')
   const [isCreating, setIsCreating] = useState(false)
   const [isResetting, setIsResetting] = useState(false)
+
+  function getAdminToken() {
+    return localStorage.getItem('adminToken')
+  }
+
+  function getAuthHeaders() {
+    const token = getAdminToken()
+
+    return {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    }
+  }
+
+  function handleUnauthorized() {
+    localStorage.removeItem('adminToken')
+    localStorage.removeItem('adminUser')
+    navigate('/admin/login')
+  }
 
   const totalAdmins = adminUsers.length
 
@@ -55,17 +78,32 @@ function AdminUsers() {
 
   async function fetchAdminUsers() {
     try {
-      const response = await fetch('http://localhost:5000/api/admin-users')
+      const token = getAdminToken()
 
-      if (!response.ok) {
-        throw new Error('Failed to load admin users')
+      if (!token) {
+        handleUnauthorized()
+        return
       }
 
+      const response = await fetch('http://localhost:5000/api/admin-users', {
+        headers: getAuthHeaders(),
+      })
+
       const data = await response.json()
+
+      if (response.status === 401) {
+        handleUnauthorized()
+        return
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to load admin users')
+      }
+
       setAdminUsers(data)
     } catch (error) {
       console.error(error)
-      setErrorMessage('Could not load admin users.')
+      setErrorMessage(error.message || 'Could not load admin users.')
     } finally {
       setLoading(false)
     }
@@ -87,13 +125,16 @@ function AdminUsers() {
     try {
       const response = await fetch('http://localhost:5000/api/admin-users', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(newAdmin),
       })
 
       const data = await response.json()
+
+      if (response.status === 401) {
+        handleUnauthorized()
+        return
+      }
 
       if (!response.ok) {
         throw new Error(data.message || 'Failed to create admin user')
@@ -102,6 +143,7 @@ function AdminUsers() {
       setAdminUsers((currentUsers) => [...currentUsers, data.data])
 
       setNewAdmin({
+        fullName: '',
         email: '',
         password: '',
         role: 'admin',
@@ -124,14 +166,17 @@ function AdminUsers() {
         `http://localhost:5000/api/admin-users/${id}/role`,
         {
           method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ role }),
         }
       )
 
       const data = await response.json()
+
+      if (response.status === 401) {
+        handleUnauthorized()
+        return
+      }
 
       if (!response.ok) {
         throw new Error(data.message || 'Failed to update admin role')
@@ -176,9 +221,7 @@ function AdminUsers() {
         `http://localhost:5000/api/admin-users/${resetPasswordData.adminId}/password`,
         {
           method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: getAuthHeaders(),
           body: JSON.stringify({
             newPassword: resetPasswordData.newPassword,
           }),
@@ -186,6 +229,11 @@ function AdminUsers() {
       )
 
       const data = await response.json()
+
+      if (response.status === 401) {
+        handleUnauthorized()
+        return
+      }
 
       if (!response.ok) {
         throw new Error(data.message || 'Failed to reset password')
@@ -210,7 +258,7 @@ function AdminUsers() {
   async function deleteAdminUser(id) {
     const currentAdmin = JSON.parse(localStorage.getItem('adminUser'))
 
-    if (currentAdmin?.id === id) {
+    if (String(currentAdmin?.id) === String(id)) {
       setErrorMessage('You cannot delete your own admin account while logged in.')
       setSuccessMessage('')
       return
@@ -227,10 +275,16 @@ function AdminUsers() {
         `http://localhost:5000/api/admin-users/${id}`,
         {
           method: 'DELETE',
+          headers: getAuthHeaders(),
         }
       )
 
       const data = await response.json()
+
+      if (response.status === 401) {
+        handleUnauthorized()
+        return
+      }
 
       if (!response.ok) {
         throw new Error(data.message || 'Failed to delete admin user')
@@ -327,6 +381,14 @@ function AdminUsers() {
             <h3>Create New Admin User</h3>
 
             <form className="donation-form" onSubmit={createAdminUser}>
+              <input
+                type="text"
+                name="fullName"
+                placeholder="Full Name"
+                value={newAdmin.fullName}
+                onChange={handleNewAdminChange}
+              />
+
               <input
                 type="email"
                 name="email"
@@ -429,6 +491,12 @@ function AdminUsers() {
                   </div>
 
                   <div className="admin-card__details">
+                    {admin.fullName && (
+                      <p>
+                        <strong>Name:</strong> {admin.fullName}
+                      </p>
+                    )}
+
                     <p>
                       <strong>User ID:</strong> {admin.id}
                     </p>
@@ -450,26 +518,52 @@ function AdminUsers() {
                   </div>
 
                   <div className="admin-actions">
-                    <select
-                      value={admin.role}
-                      onChange={(event) =>
-                        updateAdminRole(admin.id, event.target.value)
-                      }
-                    >
-                      <option value="super-admin">Super Admin</option>
-                      <option value="admin">Admin</option>
-                      <option value="staff">Staff</option>
-                      <option value="finance">Finance</option>
-                    </select>
+  {(() => {
+    const currentAdmin = JSON.parse(localStorage.getItem('adminUser'))
+    const isCurrentUser = String(currentAdmin?.id) === String(admin.id)
+    const isLastSuperAdmin =
+      admin.role === 'super-admin' && superAdminCount <= 1
+    const shouldProtectUser = isCurrentUser || isLastSuperAdmin
 
-                    <button
-                      className="btn btn--danger"
-                      type="button"
-                      onClick={() => deleteAdminUser(admin.id)}
-                    >
-                      Delete User
-                    </button>
-                  </div>
+    return (
+      <>
+        <select
+          value={admin.role}
+          disabled={shouldProtectUser}
+          onChange={(event) =>
+            updateAdminRole(admin.id, event.target.value)
+          }
+          title={
+            shouldProtectUser
+              ? 'This protected admin account cannot be demoted.'
+              : 'Change admin role'
+          }
+        >
+          <option value="super-admin">Super Admin</option>
+          <option value="admin">Admin</option>
+          <option value="staff">Staff</option>
+          <option value="finance">Finance</option>
+        </select>
+
+        {!shouldProtectUser && (
+          <button
+            className="btn btn--danger"
+            type="button"
+            onClick={() => deleteAdminUser(admin.id)}
+          >
+            Delete User
+          </button>
+        )}
+
+        {shouldProtectUser && (
+          <span className="status-badge status-badge--approved">
+            Protected Account
+          </span>
+        )}
+      </>
+    )
+  })()}
+</div>
                 </article>
               ))}
             </div>

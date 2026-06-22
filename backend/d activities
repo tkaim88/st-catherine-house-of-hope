@@ -1,0 +1,19 @@
+                              Table "public.activities"
+   Column    |            Type             | Collation | Nullable |      Default      
+-------------+-----------------------------+-----------+----------+-------------------
+ id          | bigint                      |           | not null | 
+ action      | character varying(255)      |           | not null | 
+ details     | text                        |           |          | 
+ created_at  | timestamp without time zone |           |          | CURRENT_TIMESTAMP
+ actor_id    | bigint                      |           |          | 
+ actor_email | character varying(255)      |           |          | 
+ actor_role  | character varying(50)       |           |          | 
+ module      | character varying(100)      |           |          | 
+ entity_type | character varying(100)      |           |          | 
+ entity_id   | bigint                      |           |          | 
+ old_value   | jsonb                       |           |          | 
+ new_value   | jsonb                       |           |          | 
+ ip_address  | character varying(100)      |           |          | 
+Indexes:
+    "activities_pkey" PRIMARY KEY, btree (id)
+
