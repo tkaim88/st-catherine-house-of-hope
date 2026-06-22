@@ -1,0 +1,350 @@
+.navbar__logo {
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--color-dark);
+  letter-spacing: -0.03em;
+}
+
+.navbar__links a {
+  color: var(--color-text);
+  font-weight: 700;
+  transition: color var(--transition-base);
+}
+
+.navbar__links a:hover {
+  color: var(--color-primary);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  min-height: 48px;
+
+  padding: 0 1.5rem;
+
+  border: none;
+
+  border-radius: 999px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn--primary {
+  color: var(--color-white);
+  background: var(--gradient-warm);
+}
+
+.btn--secondary {
+  color: var(--color-white);
+  background: var(--color-primary);
+}
+
+.btn--secondary-dark {
+  color: var(--color-primary);
+  background: var(--color-white);
+  border-color: var(--color-primary);
+}
+
+.btn--danger {
+  color: var(--color-white);
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.btn--danger:hover {
+  background: var(--color-danger-dark);
+  border-color: var(--color-danger-dark);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.card,
+.summary-card,
+.metric-card,
+.quick-action-card,
+.admin-card,
+.child-card,
+.donation-impact article,
+.child-profile-grid section {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.card {
+  padding: var(--space-8);
+}
+
+.card h3 {
+  margin-bottom: var(--space-3);
+}
+
+.status-badge,
+.decision-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.status-badge {
+  padding: 0.4rem 0.8rem;
+}
+
+.decision-label {
+  padding: 0.75rem 1rem;
+}
+
+.status-badge--pending {
+  color: #92400e;
+  background: var(--color-warning-light);
+}
+
+.status-badge--approved,
+.decision-label--approved {
+  color: #166534;
+  background: var(--color-success-light);
+}
+
+.status-badge--rejected,
+.decision-label--rejected {
+  color: #991b1b;
+  background: var(--color-danger-light);
+}
+
+.footer {
+  margin-top: auto;
+  padding: var(--space-8) 0;
+  color: var(--color-white);
+  text-align: center;
+  background: var(--color-dark);
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background: rgba(15, 23, 42, 0.62);
+  backdrop-filter: blur(6px);
+}
+
+.modal-content {
+  width: min(100%, 640px);
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--space-8);
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-content h2 {
+  margin-bottom: var(--space-4);
+}
+
+.modal-content p {
+  margin-bottom: var(--space-3);
+}
+
+.child-card {
+  overflow: hidden;
+}
+
+.child-card__image-button {
+  width: 100%;
+  height: 220px;
+  border: 0;
+  overflow: hidden;
+  background: #f1f5f9;
+}
+
+.child-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.child-card__placeholder,
+.child-profile-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  font-weight: 900;
+  background: var(--color-secondary-light);
+}
+
+.child-card__placeholder {
+  width: 100%;
+  height: 100%;
+  font-size: 3rem;
+}
+
+.child-card__content {
+  padding: var(--space-6);
+}
+
+.child-profile-modal {
+  width: min(100%, 920px);
+}
+
+.child-profile-header {
+  display: flex;
+  gap: var(--space-6);
+  align-items: center;
+  margin-bottom: var(--space-8);
+}
+
+.child-profile-image,
+.child-profile-placeholder {
+  width: 160px;
+  height: 160px;
+  border-radius: var(--radius-lg);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.child-profile-placeholder {
+  font-size: 3rem;
+}
+
+@media (max-width: 700px) {
+  .child-profile-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.navbar__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.navbar__logo-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.45rem;
+  height: 2.45rem;
+  color: var(--color-white);
+  background: var(--gradient-warm);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  font-size: 0.85rem;
+  font-weight: 900;
+}
+
+.navbar__links a {
+  position: relative;
+  padding: 0.55rem 0;
+}
+
+.navbar__links a.active {
+  color: var(--color-primary);
+}
+
+.navbar__links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0.2rem;
+  width: 100%;
+  height: 2px;
+  background: var(--color-primary);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--transition-base);
+}
+
+.navbar__links a:hover::after,
+.navbar__links a.active::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.card,
+.admin-card,
+.summary-card,
+.metric-card,
+.donation-form {
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.card:hover,
+.admin-card:hover,
+.summary-card:hover,
+.metric-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+}
+
+.public-child-profile .card,
+.public-child-profile article,
+.public-sponsor-actions,
+.child-profile-grid section,
+.sponsorship-status-card,
+.sponsor-child-card {
+  padding: var(--space-6);
+  background: var(--color-white);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.public-child-profile .card:hover,
+.public-child-profile article:hover,
+.child-profile-grid section:hover,
+.sponsorship-status-card:hover,
+.sponsor-child-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.public-child-profile h2,
+.public-child-profile h3,
+.child-profile-grid h3 {
+  margin-bottom: var(--space-3);
+  color: var(--color-dark);
+}
+
+.public-child-profile p,
+.child-profile-grid p {
+  color: var(--color-text);
+}
+
+.public-sponsor-actions {
+  box-shadow: none;
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+

@@ -1,0 +1,135 @@
+.admin-summary,
+.admin-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: var(--space-4);
+  max-width: 780px;
+  margin: var(--space-8) 0;
+}
+
+.summary-card,
+.metric-card {
+  padding: var(--space-6);
+}
+
+.summary-card span,
+.metric-card h4 {
+  display: block;
+  margin-bottom: var(--space-3);
+  color: var(--color-muted);
+  font-size: 0.92rem;
+  font-weight: 900;
+}
+
+.summary-card strong,
+.metric-card strong {
+  color: var(--color-dark);
+  font-size: 2.1rem;
+  line-height: 1;
+}
+
+.admin-quick-actions {
+  max-width: 960px;
+  margin: var(--space-8) 0;
+}
+
+.admin-quick-actions h3 {
+  margin-bottom: var(--space-4);
+}
+
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+.quick-action-card {
+  padding: var(--space-6);
+  text-align: left;
+  font-weight: 800;
+  transition:
+    transform var(--transition-base),
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
+}
+
+.quick-action-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.quick-action-card strong {
+  display: block;
+  margin-top: var(--space-3);
+  color: var(--color-primary);
+  font-size: 1.5rem;
+}
+
+.quick-action-card span {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.95rem;
+}
+
+.quick-action-card--danger {
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+.admin-list {
+  display: grid;
+  gap: var(--space-5);
+  margin-top: var(--space-6);
+}
+
+.admin-card {
+  max-width: 760px;
+  padding: var(--space-6);
+}
+
+.admin-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.admin-card__header h3 {
+  margin-bottom: var(--space-2);
+  font-size: 1.1rem;
+  letter-spacing: -0.02em;
+}
+
+.admin-card__header p {
+  color: var(--color-muted);
+}
+
+.admin-card__details {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.admin-actions select {
+  width: auto;
+  min-width: 150px;
+}
+
+@media (max-width: 800px) {
+  .admin-summary,
+  .admin-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-card__header {
+    flex-direction: column;
+  }
+}

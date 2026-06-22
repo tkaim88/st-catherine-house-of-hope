@@ -5,7 +5,8 @@ function Navbar() {
     <header className="navbar">
       <div className="container navbar__content">
         <NavLink to="/" className="navbar__logo">
-          St Catherine House of Hope
+          <span className="navbar__logo-mark">SC</span>
+          <span>St Catherine House of Hope</span>
         </NavLink>
 
         <nav className="navbar__links" aria-label="Main navigation">

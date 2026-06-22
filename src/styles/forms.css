@@ -1,0 +1,155 @@
+.form,
+.donation-form {
+  display: grid;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.form {
+  max-width: 640px;
+  margin-top: var(--space-8);
+}
+
+.donation-form {
+  padding: var(--space-8);
+  background: var(--color-white);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.form-grid--amount {
+  grid-template-columns: 1.2fr 1fr;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.form-field label {
+  color: var(--color-dark);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.95rem 1rem;
+  color: var(--color-dark);
+  background: var(--color-white);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  outline: none;
+  font-weight: 600;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #475569;
+  font-weight: 500;
+}
+
+select {
+  color: var(--color-dark);
+  font-weight: 700;
+}
+
+textarea {
+  min-height: 130px;
+  resize: vertical;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--color-primary);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
+}
+
+.admin-search,
+.admin-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin: var(--space-8) 0;
+}
+
+.admin-search input {
+  max-width: 520px;
+}
+
+.admin-search select,
+.admin-filters button {
+  width: auto;
+}
+
+.admin-filters button {
+  padding: 0.85rem 1.25rem;
+  color: var(--color-dark);
+  background: var(--color-white);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  font-weight: 800;
+}
+
+.admin-filters button.active {
+  color: var(--color-white);
+  background: var(--gradient-warm);
+  border-color: transparent;
+}
+
+.password-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-input-wrapper input {
+  padding-right: 3.75rem;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 3.5rem;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--color-dark);
+  font-size: 1.1rem;
+}
+
+.donation-submit {
+  width: 100%;
+}
+
+@media (max-width: 800px) {
+  .form-grid,
+  .form-grid--amount {
+    grid-template-columns: 1fr;
+  }
+
+  .donation-form {
+    padding: var(--space-5);
+  }
+}

@@ -8,11 +8,11 @@ function Hero() {
       style={{
         backgroundImage: `
           linear-gradient(
-            rgba(15, 23, 42, 0.70),
-            rgba(15, 23, 42, 0.70)
+            rgba(15, 23, 42, 0.40),
+            rgba(15, 23, 42, 0.40)
           ),
           url(${heroImage})
-        `
+        `,
       }}
     >
       <div className="container hero__content">
