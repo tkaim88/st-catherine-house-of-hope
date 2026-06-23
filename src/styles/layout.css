@@ -2,7 +2,7 @@
   position: sticky;
   top: 0;
   z-index: var(--z-navbar);
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--color-border);
 }
@@ -13,6 +13,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-6);
+  position: relative;
 }
 
 .navbar__links {
@@ -41,13 +42,13 @@
 .hero__content {
   position: relative;
   z-index: 2;
-  max-width: 780px;
-  color: white;
+  max-width: 720px;
+  color: var(--color-white);
 }
 
 .hero__text {
   font-size: 1.15rem;
-  max-width: 680px;
+  max-width: 620px;
   margin-top: var(--space-5);
   margin-bottom: var(--space-8);
 }
@@ -88,6 +89,29 @@
   grid-column: 1 / -1;
 }
 
+.hero h1,
+.hero h2,
+.hero h3,
+.hero p {
+  color: var(--color-white);
+}
+
+.hero .eyebrow {
+  color: var(--color-secondary);
+}
+
+.hero h1 {
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+.section h1 {
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin-bottom: 1rem;
+  color: var(--color-dark);
+}
+
 @media (max-width: 900px) {
   .card-grid {
     grid-template-columns: 1fr;
@@ -104,52 +128,21 @@
 
 @media (max-width: 768px) {
   .navbar__content {
-    flex-direction: column;
-    padding: var(--space-4) 0;
-  }
-
-  .navbar__links {
-    flex-wrap: wrap;
-    justify-content: center;
+    min-height: 72px;
+    padding: var(--space-3) 0;
+    flex-direction: row;
   }
 
   .hero {
     min-height: 80vh;
   }
-}
 
-.hero h1,
-.hero h2,
-.hero h3,
-.hero p {
-  color: var(--color-white);
-}
+  .hero__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
 
-.hero .eyebrow {
-  color: var(--color-secondary);
-}
-
-.hero__content {
-  max-width: 720px;
-}
-
-.hero h1 {
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-}
-
-.hero__text {
-  font-size: 1.15rem;
-  max-width: 620px;
-}
-
-.section h1 {
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
-
-  line-height: 1.05;
-
-  letter-spacing: -0.03em;
-
-  margin-bottom: 1rem;
-
-  color: var(--color-dark);
+  .hero__actions .btn {
+    width: 100%;
+  }
 }
