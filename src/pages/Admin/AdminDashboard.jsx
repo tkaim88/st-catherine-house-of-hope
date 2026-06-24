@@ -311,6 +311,12 @@ function AdminDashboard() {
                     </Link>
                   )}
 
+                  {hasPermission('sponsorshipApplications') && (
+                    <Link   className="quick-action-card" to="/admin/sponsorship-applications">
+                      Sponsorship Applications
+                    </Link>
+           )}
+
                   {hasPermission('messages') && (
                     <Link className="quick-action-card" to="/admin/messages">
                       Contact Messages
