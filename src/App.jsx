@@ -27,6 +27,9 @@ import AdminNotifications from './pages/Admin/AdminNotification'
 import AdminSettings from './pages/Admin/AdminSettings'
 import AccessDenied from './pages/Admin/AccessDenied'
 import AdminUsers from './pages/Admin/AdminUsers'
+import SponsorLogin from './pages/Sponsor/SponsorLogin'
+import SponsorDashboard from './pages/Sponsor/SponsorDashboard'
+import SponsorProtectedRoute from './components/SponsorProtectedRoute'
 
 function App() {
   return (
@@ -42,6 +45,17 @@ function App() {
         path="/sponsor-child/:childId/apply"
         element={<SponsorApplication />}
       />
+
+      <Route path="/sponsor-login" element={<SponsorLogin />} />
+
+      <Route
+        path="/sponsor"
+        element={
+          <SponsorProtectedRoute>
+            <SponsorDashboard />
+          </SponsorProtectedRoute>
+     }
+   />
 
       <Route path="/admin-login" element={<AdminLogin />} />
 
@@ -180,6 +194,8 @@ function App() {
         }
       />
     </Routes>
+
+
   )
 }
 
