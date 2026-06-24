@@ -79,10 +79,7 @@ function SponsorDashboard() {
             birthDate.getDate()
           )
 
-    const millisecondsPerDay = 1000 * 60 * 60 * 24
-    const difference = nextBirthday - startOfDay(today)
-
-    return Math.ceil(difference / millisecondsPerDay)
+    return Math.ceil((nextBirthday - startOfDay(today)) / 86400000)
   }
 
   function getNextAge(selectedChild) {
@@ -100,9 +97,7 @@ function SponsorDashboard() {
       (today.getMonth() === birthDate.getMonth() &&
         today.getDate() >= birthDate.getDate())
 
-    if (!hasBirthdayPassedThisYear) {
-      age -= 1
-    }
+    if (!hasBirthdayPassedThisYear) age -= 1
 
     return age + 1
   }
@@ -217,40 +212,53 @@ function SponsorDashboard() {
               </div>
 
               <section className="admin-quick-actions">
-                <h3>Your Sponsor Profile</h3>
+                <h3>Sponsorship Summary</h3>
 
-                <article className="admin-card">
-                  <p>
-                    <strong>Name:</strong> {sponsor.fullName}
-                  </p>
+                <div className="admin-list">
+                  <article className="admin-card">
+                    <div className="admin-card__details">
+                      <p>
+                        <strong>Sponsor:</strong> {sponsor.fullName}
+                      </p>
 
-                  <p>
-                    <strong>Email:</strong> {sponsor.email}
-                  </p>
+                      <p>
+                        <strong>Email:</strong> {sponsor.email}
+                      </p>
 
-                  <p>
-                    <strong>Phone:</strong> {sponsor.phone || 'Not provided'}
-                  </p>
+                      <p>
+                        <strong>Phone:</strong>{' '}
+                        {sponsor.phone || 'Not provided'}
+                      </p>
 
-                  <p>
-                    <strong>Country:</strong>{' '}
-                    {sponsor.country || 'Not provided'}
-                  </p>
+                      <p>
+                        <strong>Country:</strong>{' '}
+                        {sponsor.country || 'Not provided'}
+                      </p>
 
-                  <p>
-                    <strong>Last Login:</strong> {formatDate(sponsor.lastLogin)}
-                  </p>
-                </article>
+                      <p>
+                        <strong>Monthly Support:</strong>{' '}
+                        {formatMoney(sponsor.currency, sponsor.monthlyAmount)}
+                      </p>
+
+                      <p>
+                        <strong>Last Login:</strong>{' '}
+                        {formatDate(sponsor.lastLogin)}
+                      </p>
+                    </div>
+                  </article>
+                </div>
               </section>
 
               <section className="admin-quick-actions">
                 <h3>Your Sponsored Child</h3>
 
                 {!child && (
-                  <p>
-                    You do not have an assigned child yet. Please contact the
-                    St Catherine House of Hope team.
-                  </p>
+                  <article className="admin-card">
+                    <p>
+                      You do not have an assigned child yet. Please contact the
+                      St Catherine House of Hope team.
+                    </p>
+                  </article>
                 )}
 
                 {child && (
@@ -268,34 +276,40 @@ function SponsorDashboard() {
                     )}
 
                     <div className="child-card__content">
-                      <h3>{child.full_name}</h3>
+                      <div className="admin-card__header">
+                        <div>
+                          <h3>{child.full_name}</h3>
+                          <p>
+                            {child.age} years old • {child.gender}
+                          </p>
+                        </div>
 
-                      <p>
-                        {child.age} years old • {child.gender}
-                      </p>
+                        <span className="status-badge status-badge--approved">
+                          Sponsored
+                        </span>
+                      </div>
 
-                      <p>
-                        <strong>School:</strong> {child.school}
-                      </p>
+                      <div className="admin-card__details">
+                        <p>
+                          <strong>Date of Birth:</strong>{' '}
+                          {formatDate(child.date_of_birth)}
+                        </p>
 
-                      <p>
-                        <strong>Grade:</strong> {child.grade}
-                      </p>
+                        <p>
+                          <strong>School:</strong>{' '}
+                          {child.school || 'Not recorded'}
+                        </p>
 
-                      <p>
-                        <strong>Date of Birth:</strong>{' '}
-                        {formatDate(child.date_of_birth)}
-                      </p>
+                        <p>
+                          <strong>Grade:</strong>{' '}
+                          {child.grade || 'Not recorded'}
+                        </p>
 
-                      <p>
-                        <strong>Medical Summary:</strong>{' '}
-                        {child.medical_notes || 'No medical notes recorded.'}
-                      </p>
-
-                      <p>
-                        <strong>Biography:</strong>{' '}
-                        {child.biography || 'No biography added yet.'}
-                      </p>
+                        <p>
+                          <strong>Biography:</strong>{' '}
+                          {child.biography || 'No biography added yet.'}
+                        </p>
+                      </div>
                     </div>
                   </article>
                 )}
@@ -314,6 +328,79 @@ function SponsorDashboard() {
                     </p>
                   )}
                 </article>
+              </section>
+
+              {child && (
+                <section className="admin-quick-actions">
+                  <h3>Education & Health Snapshot</h3>
+
+                  <div className="child-profile-grid">
+                    <section>
+                      <h3>Education</h3>
+
+                      <p>
+                        <strong>School:</strong>{' '}
+                        {child.school || 'Not recorded'}
+                      </p>
+
+                      <p>
+                        <strong>Grade:</strong>{' '}
+                        {child.grade || 'Not recorded'}
+                      </p>
+
+                      <p>
+                        <strong>Education Notes:</strong>{' '}
+                        {child.education_notes ||
+                          'No education notes recorded yet.'}
+                      </p>
+                    </section>
+
+                    <section>
+                      <h3>Health</h3>
+
+                      <p>
+                        <strong>Medical Summary:</strong>{' '}
+                        {child.medical_notes || 'No medical notes recorded.'}
+                      </p>
+
+                      <p>
+                        <strong>Allergies:</strong>{' '}
+                        {child.allergies || 'Not recorded'}
+                      </p>
+
+                      <p>
+                        <strong>Blood Type:</strong>{' '}
+                        {child.blood_type || 'Not recorded'}
+                      </p>
+                    </section>
+                  </div>
+                </section>
+              )}
+
+              <section className="admin-quick-actions">
+                <h3>Coming Soon</h3>
+
+                <div className="quick-actions-grid">
+                  <article className="quick-action-card">
+                    Progress Reports
+                    <span>Academic and personal development updates.</span>
+                  </article>
+
+                  <article className="quick-action-card">
+                    Sponsor Messages
+                    <span>Send messages and birthday wishes.</span>
+                  </article>
+
+                  <article className="quick-action-card">
+                    Photo Gallery
+                    <span>View approved child and activity photos.</span>
+                  </article>
+
+                  <article className="quick-action-card">
+                    Sponsorship Payments
+                    <span>Track payment history and receipts.</span>
+                  </article>
+                </div>
               </section>
             </>
           )}
