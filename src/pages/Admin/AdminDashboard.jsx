@@ -315,8 +315,14 @@ function AdminDashboard() {
                     <Link   className="quick-action-card" to="/admin/sponsorship-applications">
                       Sponsorship Applications
                     </Link>
-           )}
+                  )} 
 
+                  {hasPermission('sponsorshipPayments') && (
+                     <Link className="quick-action-card" to="/admin/sponsorship-payments">
+                       Sponsorship Payments
+                    </Link>
+                  )}
+                  
                   {hasPermission('messages') && (
                     <Link className="quick-action-card" to="/admin/messages">
                       Contact Messages
