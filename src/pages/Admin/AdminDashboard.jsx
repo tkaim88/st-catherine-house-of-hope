@@ -382,8 +382,13 @@ function AdminDashboard() {
                       </div>
 
                       <p>
-                        <strong>Date of Birth:</strong> {child.dateOfBirth}
-                      </p>
+                        <strong>Date of Birth:</strong>{' '}
+                        {new Date(child.dateOfBirth).toLocaleDateString('en-GB', {
+                          day: '2-digit',
+                          month: 'long',
+                          year: 'numeric',
+                     })}
+                     </p>
 
                       <p>
                         <strong>Sponsor:</strong> {child.sponsor || 'None'}
