@@ -1,7 +1,8 @@
 .admin-summary,
 .admin-metrics {
+  width: 100%;
   display: grid;
-  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-4);
   max-width: 780px;
   margin: var(--space-8) 0;
@@ -9,6 +10,7 @@
 
 .summary-card,
 .metric-card {
+  min-width: 0;
   padding: var(--space-6);
 }
 
@@ -23,12 +25,15 @@
 
 .summary-card strong,
 .metric-card strong {
+  display: block;
   color: var(--color-dark);
-  font-size: 2.1rem;
+  font-size: clamp(1.6rem, 8vw, 2.1rem);
   line-height: 1;
+  word-break: break-word;
 }
 
 .admin-quick-actions {
+  width: 100%;
   max-width: 960px;
   margin: var(--space-8) 0;
 }
@@ -39,11 +44,12 @@
 
 .quick-actions-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
   gap: var(--space-4);
 }
 
 .quick-action-card {
+  min-width: 0;
   padding: var(--space-6);
   text-align: left;
   font-weight: 800;
@@ -63,7 +69,7 @@
   display: block;
   margin-top: var(--space-3);
   color: var(--color-primary);
-  font-size: 1.5rem;
+  font-size: clamp(1.25rem, 6vw, 1.5rem);
 }
 
 .quick-action-card span {
@@ -78,13 +84,16 @@
 }
 
 .admin-list {
+  width: 100%;
   display: grid;
   gap: var(--space-5);
   margin-top: var(--space-6);
 }
 
 .admin-card {
+  width: 100%;
   max-width: 760px;
+  min-width: 0;
   padding: var(--space-6);
 }
 
@@ -100,15 +109,23 @@
   margin-bottom: var(--space-2);
   font-size: 1.1rem;
   letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
 }
 
 .admin-card__header p {
   color: var(--color-muted);
+  overflow-wrap: anywhere;
 }
 
 .admin-card__details {
   display: grid;
   gap: var(--space-2);
+}
+
+.admin-card__details p,
+.admin-card__details span,
+.admin-card__details strong {
+  overflow-wrap: anywhere;
 }
 
 .admin-actions {
@@ -127,9 +144,31 @@
   .admin-summary,
   .admin-metrics {
     grid-template-columns: 1fr;
+    max-width: 100%;
+    margin: var(--space-6) 0;
   }
 
   .admin-card__header {
     flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .summary-card,
+  .metric-card,
+  .quick-action-card,
+  .admin-card {
+    padding: var(--space-5);
+    border-radius: var(--radius-md);
+  }
+
+  .admin-actions {
+    flex-direction: column;
+  }
+
+  .admin-actions .btn,
+  .admin-actions button,
+  .admin-actions select {
+    width: 100%;
   }
 }

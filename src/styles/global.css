@@ -12,10 +12,13 @@
 html {
   scroll-behavior: smooth;
   font-size: 16px;
+  overflow-x: hidden;
 }
 
 body {
   min-height: 100vh;
+  max-width: 100%;
+  overflow-x: hidden;
   font-family: var(--font-sans);
   color: var(--color-text);
   background:
@@ -73,18 +76,19 @@ h4 {
   color: var(--color-dark);
   line-height: 1.08;
   letter-spacing: -0.035em;
+  overflow-wrap: anywhere;
 }
 
 h1 {
-  font-size: clamp(2.4rem, 6vw, 5.25rem);
+  font-size: clamp(2rem, 11vw, 5.25rem);
 }
 
 h2 {
-  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-size: clamp(1.75rem, 8vw, 3.25rem);
 }
 
 h3 {
-  font-size: clamp(1.25rem, 2vw, 1.75rem);
+  font-size: clamp(1.2rem, 5vw, 1.75rem);
 }
 
 p {
@@ -140,6 +144,7 @@ strong {
   border-radius: var(--radius-md);
   font-weight: 800;
   box-shadow: var(--shadow-xs);
+  overflow-wrap: anywhere;
 }
 
 .success-message {
@@ -164,10 +169,28 @@ strong {
 
 @media (max-width: 700px) {
   .section {
-    padding: var(--space-16) 0;
+    padding: var(--space-12) 0;
   }
 
   .container {
     width: min(100% - 24px, var(--container-width));
+  }
+
+  p {
+    font-size: 0.98rem;
+  }
+
+  .eyebrow {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .container {
+    width: min(100% - 20px, var(--container-width));
+  }
+
+  .section {
+    padding: var(--space-10) 0;
   }
 }

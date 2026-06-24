@@ -41,7 +41,7 @@ function AdminUsers() {
   function handleUnauthorized() {
     localStorage.removeItem('adminToken')
     localStorage.removeItem('adminUser')
-    navigate('/admin/login')
+    navigate('/admin-login')
   }
 
   const totalAdmins = adminUsers.length

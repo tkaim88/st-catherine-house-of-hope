@@ -22,6 +22,8 @@ function AdminChildren() {
     status: 'Active',
   }
 
+  const API_BASE_URL = 'https://st-catherine-house-of-hope-api.onrender.com/api'
+
   const [children, setChildren] = useState([])
   const [sponsors, setSponsors] = useState([])
   const [selectedChild, setSelectedChild] = useState(null)
@@ -33,12 +35,8 @@ function AdminChildren() {
   const [formData, setFormData] = useState(emptyForm)
 
   const totalChildren = children.length
-
   const boysCount = children.filter((child) => child.gender === 'Male').length
-
-  const girlsCount = children.filter(
-    (child) => child.gender === 'Female'
-  ).length
+  const girlsCount = children.filter((child) => child.gender === 'Female').length
 
   const sponsoredCount = children.filter(
     (child) => child.sponsor && child.sponsor !== 'None'
@@ -63,8 +61,8 @@ function AdminChildren() {
   async function fetchChildrenAndSponsors() {
     try {
       const [childrenResponse, sponsorsResponse] = await Promise.all([
-        fetch('https://st-catherine-house-of-hope-api.onrender.com/api/children'),
-        fetch('https://st-catherine-house-of-hope-api.onrender.com/api/sponsors'),
+        fetch(`${API_BASE_URL}/children`),
+        fetch(`${API_BASE_URL}/sponsors`),
       ])
 
       if (!childrenResponse.ok || !sponsorsResponse.ok) {
@@ -146,65 +144,51 @@ function AdminChildren() {
   }
 
   async function createChild(childPayload) {
-    const newChild = {
-      ...childPayload,
-      createdAt: new Date().toISOString(),
-    }
-
     try {
-      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/children', {
+      const response = await fetch(`${API_BASE_URL}/children`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newChild),
+        body: JSON.stringify(childPayload),
       })
-
-      if (!response.ok) {
-        throw new Error('Failed to add child')
-      }
 
       const savedChild = await response.json()
 
-      setChildren((currentChildren) => [...currentChildren, savedChild])
+      if (!response.ok) {
+        throw new Error(savedChild.message || 'Failed to add child')
+      }
+
+      setChildren((currentChildren) => [savedChild.data, ...currentChildren])
       setSuccessMessage('Child record added successfully.')
       setErrorMessage('')
       resetForm()
     } catch (error) {
       console.error(error)
-      setErrorMessage('Could not add child record.')
+      setErrorMessage(error.message || 'Could not add child record.')
       setSuccessMessage('')
     }
   }
 
   async function updateChild(childPayload) {
-    const updatedChild = {
-      ...editingChild,
-      ...childPayload,
-      updatedAt: new Date().toISOString(),
-    }
-
     try {
-      const response = await fetch(
-        `https://st-catherine-house-of-hope-api.onrender.com/api/children/${editingChild.id}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(updatedChild),
-        }
-      )
-
-      if (!response.ok) {
-        throw new Error('Failed to update child')
-      }
+      const response = await fetch(`${API_BASE_URL}/children/${editingChild.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(childPayload),
+      })
 
       const savedChild = await response.json()
 
+      if (!response.ok) {
+        throw new Error(savedChild.message || 'Failed to update child')
+      }
+
       setChildren((currentChildren) =>
         currentChildren.map((child) =>
-          child.id === savedChild.id ? savedChild : child
+          String(child.id) === String(savedChild.data.id) ? savedChild.data : child
         )
       )
 
@@ -213,7 +197,7 @@ function AdminChildren() {
       resetForm()
     } catch (error) {
       console.error(error)
-      setErrorMessage('Could not update child record.')
+      setErrorMessage(error.message || 'Could not update child record.')
       setSuccessMessage('')
     }
   }
@@ -226,23 +210,25 @@ function AdminChildren() {
     if (!confirmed) return
 
     try {
-      const response = await fetch(`https://st-catherine-house-of-hope-api.onrender.com/api/children/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/children/${id}`, {
         method: 'DELETE',
       })
 
+      const deletedChild = await response.json()
+
       if (!response.ok) {
-        throw new Error('Failed to delete child')
+        throw new Error(deletedChild.message || 'Failed to delete child')
       }
 
       setChildren((currentChildren) =>
-        currentChildren.filter((child) => child.id !== id)
+        currentChildren.filter((child) => String(child.id) !== String(id))
       )
 
-      if (selectedChild?.id === id) {
+      if (String(selectedChild?.id) === String(id)) {
         setSelectedChild(null)
       }
 
-      if (editingChild?.id === id) {
+      if (String(editingChild?.id) === String(id)) {
         resetForm()
       }
 
@@ -250,7 +236,7 @@ function AdminChildren() {
       setErrorMessage('')
     } catch (error) {
       console.error(error)
-      setErrorMessage('Could not delete child record.')
+      setErrorMessage(error.message || 'Could not delete child record.')
     }
   }
 
@@ -297,13 +283,10 @@ function AdminChildren() {
   }
 
   function formatMoney(currency, amount) {
-    return `${currency || 'N/A'} ${Number(amount || 0).toLocaleString(
-      'en-US',
-      {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }
-    )}`
+    return `${currency || 'N/A'} ${Number(amount || 0).toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`
   }
 
   useEffect(() => {
@@ -321,9 +304,7 @@ function AdminChildren() {
           <p className="eyebrow">Admin Dashboard</p>
           <h1>Children Management</h1>
 
-          {successMessage && (
-            <p className="success-message">{successMessage}</p>
-          )}
+          {successMessage && <p className="success-message">{successMessage}</p>}
 
           {errorMessage && <p className="error-message">{errorMessage}</p>}
 
@@ -539,15 +520,11 @@ function AdminChildren() {
 
           {loading && <p>Loading children records...</p>}
 
-          {!loading && children.length === 0 && (
-            <p>No children records found.</p>
-          )}
+          {!loading && children.length === 0 && <p>No children records found.</p>}
 
-          {!loading &&
-            children.length > 0 &&
-            filteredChildren.length === 0 && (
-              <p>No children match your current search.</p>
-            )}
+          {!loading && children.length > 0 && filteredChildren.length === 0 && (
+            <p>No children match your current search.</p>
+          )}
 
           <div className="children-card-grid">
             {filteredChildren.map((child) => {
@@ -741,8 +718,7 @@ function AdminChildren() {
                 {selectedChildSponsor ? (
                   <>
                     <p>
-                      <strong>Sponsor:</strong>{' '}
-                      {selectedChildSponsor.fullName}
+                      <strong>Sponsor:</strong> {selectedChildSponsor.fullName}
                     </p>
 
                     <p>
@@ -775,8 +751,7 @@ function AdminChildren() {
                 ) : (
                   <>
                     <p>
-                      <strong>Sponsor:</strong>{' '}
-                      {selectedChild.sponsor || 'None'}
+                      <strong>Sponsor:</strong> {selectedChild.sponsor || 'None'}
                     </p>
 
                     <p>

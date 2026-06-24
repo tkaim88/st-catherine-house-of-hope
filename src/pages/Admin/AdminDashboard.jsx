@@ -7,6 +7,8 @@ import { hasPermission } from '../../utils/adminPermissions'
 function AdminDashboard() {
   const navigate = useNavigate()
 
+  const API_BASE_URL = 'https://st-catherine-house-of-hope-api.onrender.com/api'
+
   const [volunteers, setVolunteers] = useState([])
   const [donations, setDonations] = useState([])
   const [children, setChildren] = useState([])
@@ -49,6 +51,17 @@ function AdminDashboard() {
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 3)
 
+  const upcomingBirthdays = children
+    .filter((child) => child.dateOfBirth)
+    .map((child) => ({
+      ...child,
+      daysUntilBirthday: getDaysUntilBirthday(child.dateOfBirth),
+      nextAge: getNextAge(child),
+    }))
+    .filter((child) => child.daysUntilBirthday !== null)
+    .sort((a, b) => a.daysUntilBirthday - b.daysUntilBirthday)
+    .slice(0, 5)
+
   function formatMoney(currency, amount) {
     return `${currency || 'N/A'} ${Number(amount || 0).toLocaleString(
       'en-US',
@@ -57,6 +70,73 @@ function AdminDashboard() {
         maximumFractionDigits: 2,
       }
     )}`
+  }
+
+  function getDaysUntilBirthday(dateOfBirth) {
+    if (!dateOfBirth) return null
+
+    const today = new Date()
+    const birthDate = new Date(dateOfBirth)
+
+    if (Number.isNaN(birthDate.getTime())) return null
+
+    const thisYearBirthday = new Date(
+      today.getFullYear(),
+      birthDate.getMonth(),
+      birthDate.getDate()
+    )
+
+    const nextBirthday =
+      thisYearBirthday >= startOfDay(today)
+        ? thisYearBirthday
+        : new Date(
+            today.getFullYear() + 1,
+            birthDate.getMonth(),
+            birthDate.getDate()
+          )
+
+    const millisecondsPerDay = 1000 * 60 * 60 * 24
+    const difference = nextBirthday - startOfDay(today)
+
+    return Math.ceil(difference / millisecondsPerDay)
+  }
+
+  function getNextAge(child) {
+    if (!child.dateOfBirth) return child.age || 'N/A'
+
+    const today = new Date()
+    const birthDate = new Date(child.dateOfBirth)
+
+    if (Number.isNaN(birthDate.getTime())) return child.age || 'N/A'
+
+    let age = today.getFullYear() - birthDate.getFullYear()
+
+    const hasBirthdayPassedThisYear =
+      today.getMonth() > birthDate.getMonth() ||
+      (today.getMonth() === birthDate.getMonth() &&
+        today.getDate() >= birthDate.getDate())
+
+    if (!hasBirthdayPassedThisYear) {
+      age -= 1
+    }
+
+    return age + 1
+  }
+
+  function startOfDay(date) {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  }
+
+  function formatBirthdayMessage(child) {
+    if (child.daysUntilBirthday === 0) {
+      return `Turns ${child.nextAge} today`
+    }
+
+    if (child.daysUntilBirthday === 1) {
+      return `Turns ${child.nextAge} tomorrow`
+    }
+
+    return `Turns ${child.nextAge} in ${child.daysUntilBirthday} days`
   }
 
   function handleLogout() {
@@ -74,11 +154,11 @@ function AdminDashboard() {
         messagesResponse,
         donorsResponse,
       ] = await Promise.all([
-        fetch('https://st-catherine-house-of-hope-api.onrender.com/api/volunteers'),
-        fetch('https://st-catherine-house-of-hope-api.onrender.com/api/donations'),
-        fetch('https://st-catherine-house-of-hope-api.onrender.com/api/children'),
-        fetch('https://st-catherine-house-of-hope-api.onrender.com/api/messages'),
-        fetch('https://st-catherine-house-of-hope-api.onrender.com/api/donors'),
+        fetch(`${API_BASE_URL}/volunteers`),
+        fetch(`${API_BASE_URL}/donations`),
+        fetch(`${API_BASE_URL}/children`),
+        fetch(`${API_BASE_URL}/messages`),
+        fetch(`${API_BASE_URL}/donors`),
       ])
 
       if (
@@ -269,6 +349,54 @@ function AdminDashboard() {
                       Admin User Management
                     </Link>
                   )}
+                </div>
+              </section>
+
+              <section className="admin-quick-actions">
+                <h3>Upcoming Birthdays</h3>
+
+                <div className="admin-list">
+                  {upcomingBirthdays.length === 0 && (
+                    <p>No upcoming birthdays found. Add each child&apos;s date of birth to enable birthday tracking.</p>
+                  )}
+
+                  {upcomingBirthdays.map((child) => (
+                    <article className="admin-card" key={child.id}>
+                      <div className="admin-card__header">
+                        <div>
+                          <h3>🎂 {child.fullName}</h3>
+                          <p>{formatBirthdayMessage(child)}</p>
+                        </div>
+
+                        <span
+                          className={
+                            child.daysUntilBirthday <= 30
+                              ? 'status-badge status-badge--pending'
+                              : 'status-badge status-badge--approved'
+                          }
+                        >
+                          {child.daysUntilBirthday === 0
+                            ? 'Today'
+                            : `${child.daysUntilBirthday} days`}
+                        </span>
+                      </div>
+
+                      <p>
+                        <strong>Date of Birth:</strong> {child.dateOfBirth}
+                      </p>
+
+                      <p>
+                        <strong>Sponsor:</strong> {child.sponsor || 'None'}
+                      </p>
+
+                      <p>
+                        <strong>Birthday Action:</strong>{' '}
+                        {child.sponsor && child.sponsor !== 'None'
+                          ? 'Prepare sponsor reminder and birthday activity.'
+                          : 'Plan birthday support and sponsorship outreach.'}
+                      </p>
+                    </article>
+                  ))}
                 </div>
               </section>
 
