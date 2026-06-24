@@ -3,6 +3,8 @@ import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
 
 function AdminSponsors() {
+  const API_BASE_URL = 'https://st-catherine-house-of-hope-api.onrender.com/api'
+
   const emptyForm = {
     fullName: '',
     email: '',
@@ -26,25 +28,22 @@ function AdminSponsors() {
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
+  const [passwordSponsorId, setPasswordSponsorId] = useState(null)
+  const [sponsorPassword, setSponsorPassword] = useState('')
 
   const totalSponsors = sponsors.length
-
   const activeSponsors = sponsors.filter(
     (sponsor) => sponsor.status === 'Active'
   ).length
-
   const inactiveSponsors = sponsors.filter(
     (sponsor) => sponsor.status === 'Inactive'
   ).length
-
   const sponsoredChildren = children.filter(
     (child) => child.sponsor && child.sponsor !== 'None'
   ).length
-
   const unsponsoredChildren = children.filter(
     (child) => !child.sponsor || child.sponsor === 'None'
   ).length
-
   const availableChildren = children.filter(
     (child) => !child.sponsor || child.sponsor === 'None'
   )
@@ -91,8 +90,8 @@ function AdminSponsors() {
   async function fetchData() {
     try {
       const [sponsorsResponse, childrenResponse] = await Promise.all([
-        fetch('https://st-catherine-house-of-hope-api.onrender.com/api/sponsors'),
-        fetch('https://st-catherine-house-of-hope-api.onrender.com/api/children'),
+        fetch(`${API_BASE_URL}/sponsors`),
+        fetch(`${API_BASE_URL}/children`),
       ])
 
       if (!sponsorsResponse.ok || !childrenResponse.ok) {
@@ -169,7 +168,7 @@ function AdminSponsors() {
 
   async function createSponsor() {
     try {
-      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/sponsors', {
+      const response = await fetch(`${API_BASE_URL}/sponsors`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -186,7 +185,7 @@ function AdminSponsors() {
         throw new Error(data.message || 'Failed to add sponsor')
       }
 
-      setSponsors((currentSponsors) => [...currentSponsors, data.data])
+      setSponsors((currentSponsors) => [data.data, ...currentSponsors])
 
       if (formData.childId) {
         setChildren((currentChildren) =>
@@ -215,7 +214,7 @@ function AdminSponsors() {
   async function updateSponsor() {
     try {
       const response = await fetch(
-        `https://st-catherine-house-of-hope-api.onrender.com/api/sponsors/${editingSponsor.id}`,
+        `${API_BASE_URL}/sponsors/${editingSponsor.id}`,
         {
           method: 'PATCH',
           headers: {
@@ -243,7 +242,7 @@ function AdminSponsors() {
 
       setSponsors((currentSponsors) =>
         currentSponsors.map((sponsor) =>
-          sponsor.id === data.data.id ? data.data : sponsor
+          String(sponsor.id) === String(data.data.id) ? data.data : sponsor
         )
       )
 
@@ -268,7 +267,7 @@ function AdminSponsors() {
 
     try {
       const response = await fetch(
-        `https://st-catherine-house-of-hope-api.onrender.com/api/sponsors/${sponsor.id}/assign-child`,
+        `${API_BASE_URL}/sponsors/${sponsor.id}/assign-child`,
         {
           method: 'PATCH',
           headers: {
@@ -290,7 +289,7 @@ function AdminSponsors() {
 
       setSponsors((currentSponsors) =>
         currentSponsors.map((item) =>
-          item.id === sponsor.id
+          String(item.id) === String(sponsor.id)
             ? {
                 ...item,
                 childId: Number(childId),
@@ -326,6 +325,50 @@ function AdminSponsors() {
     }
   }
 
+  async function updateSponsorPasswordHandler(sponsorId) {
+    if (!sponsorPassword || sponsorPassword.length < 6) {
+      setErrorMessage('Sponsor password must be at least 6 characters long.')
+      setSuccessMessage('')
+      return
+    }
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/sponsors/${sponsorId}/password`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            password: sponsorPassword,
+          }),
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to update sponsor password')
+      }
+
+      setSponsors((currentSponsors) =>
+        currentSponsors.map((sponsor) =>
+          String(sponsor.id) === String(data.data.id) ? data.data : sponsor
+        )
+      )
+
+      setSuccessMessage('Sponsor portal password updated successfully.')
+      setErrorMessage('')
+      setSponsorPassword('')
+      setPasswordSponsorId(null)
+    } catch (error) {
+      console.error(error)
+      setErrorMessage(error.message || 'Could not update sponsor password.')
+      setSuccessMessage('')
+    }
+  }
+
   async function deleteSponsor(id) {
     const confirmed = window.confirm(
       'Are you sure you want to delete this sponsor record?'
@@ -334,7 +377,7 @@ function AdminSponsors() {
     if (!confirmed) return
 
     try {
-      const response = await fetch(`https://st-catherine-house-of-hope-api.onrender.com/api/sponsors/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/sponsors/${id}`, {
         method: 'DELETE',
       })
 
@@ -344,10 +387,12 @@ function AdminSponsors() {
         throw new Error(data.message || 'Failed to delete sponsor')
       }
 
-      const deletedSponsor = sponsors.find((sponsor) => sponsor.id === id)
+      const deletedSponsor = sponsors.find(
+        (sponsor) => String(sponsor.id) === String(id)
+      )
 
       setSponsors((currentSponsors) =>
-        currentSponsors.filter((sponsor) => sponsor.id !== id)
+        currentSponsors.filter((sponsor) => String(sponsor.id) !== String(id))
       )
 
       setChildren((currentChildren) =>
@@ -363,15 +408,15 @@ function AdminSponsors() {
         )
       )
 
-      if (selectedSponsor?.id === id) {
+      if (String(selectedSponsor?.id) === String(id)) {
         setSelectedSponsor(null)
       }
 
-      if (editingSponsor?.id === id) {
+      if (String(editingSponsor?.id) === String(id)) {
         resetForm()
       }
 
-      setSuccessMessage('Sponsor record deleted.')
+      setSuccessMessage(data.message || 'Sponsor record deleted.')
       setErrorMessage('')
     } catch (error) {
       console.error(error)
@@ -393,9 +438,7 @@ function AdminSponsors() {
           <p className="eyebrow">Admin Dashboard</p>
           <h1>Sponsorship Management</h1>
 
-          {successMessage && (
-            <p className="success-message">{successMessage}</p>
-          )}
+          {successMessage && <p className="success-message">{successMessage}</p>}
 
           {errorMessage && <p className="error-message">{errorMessage}</p>}
 
@@ -562,9 +605,7 @@ function AdminSponsors() {
 
           {loading && <p>Loading sponsors...</p>}
 
-          {!loading && sponsors.length === 0 && (
-            <p>No sponsor records found.</p>
-          )}
+          {!loading && sponsors.length === 0 && <p>No sponsor records found.</p>}
 
           {!loading && sponsors.length > 0 && filteredSponsors.length === 0 && (
             <p>No sponsors match your current search.</p>
@@ -659,6 +700,44 @@ function AdminSponsors() {
                     </div>
                   )}
 
+                  {passwordSponsorId === sponsor.id && (
+                    <div className="admin-card mt-4">
+                      <h4>Set Sponsor Portal Password</h4>
+
+                      <input
+                        type="password"
+                        placeholder="New Sponsor Password"
+                        value={sponsorPassword}
+                        onChange={(event) =>
+                          setSponsorPassword(event.target.value)
+                        }
+                      />
+
+                      <div className="admin-actions">
+                        <button
+                          className="btn btn--primary"
+                          type="button"
+                          onClick={() =>
+                            updateSponsorPasswordHandler(sponsor.id)
+                          }
+                        >
+                          Save Password
+                        </button>
+
+                        <button
+                          className="btn btn--secondary"
+                          type="button"
+                          onClick={() => {
+                            setPasswordSponsorId(null)
+                            setSponsorPassword('')
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="admin-actions">
                     <button
                       className="btn btn--primary"
@@ -677,6 +756,17 @@ function AdminSponsors() {
                     </button>
 
                     <button
+                      className="btn btn--secondary"
+                      type="button"
+                      onClick={() => {
+                        setPasswordSponsorId(sponsor.id)
+                        setSponsorPassword('')
+                      }}
+                    >
+                      Portal Password
+                    </button>
+
+                    <button
                       className="btn btn--danger"
                       type="button"
                       onClick={() => deleteSponsor(sponsor.id)}
@@ -692,10 +782,7 @@ function AdminSponsors() {
       </section>
 
       {selectedSponsor && (
-        <div
-          className="modal-overlay"
-          onClick={() => setSelectedSponsor(null)}
-        >
+        <div className="modal-overlay" onClick={() => setSelectedSponsor(null)}>
           <div
             className="modal-content child-profile-modal"
             onClick={(event) => event.stopPropagation()}
@@ -802,6 +889,18 @@ function AdminSponsors() {
                 onClick={() => startEditingSponsor(selectedSponsor)}
               >
                 Edit Sponsor
+              </button>
+
+              <button
+                className="btn btn--secondary"
+                type="button"
+                onClick={() => {
+                  setPasswordSponsorId(selectedSponsor.id)
+                  setSelectedSponsor(null)
+                  setSponsorPassword('')
+                }}
+              >
+                Portal Password
               </button>
 
               <button

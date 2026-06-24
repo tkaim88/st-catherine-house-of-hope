@@ -5,6 +5,7 @@ import {
   deleteSponsor,
   getSponsors,
   updateSponsor,
+  updateSponsorPassword,
 } from '../controllers/sponsorController.js'
 
 const router = express.Router()
@@ -14,5 +15,6 @@ router.post('/', createSponsor)
 router.patch('/:id', updateSponsor)
 router.patch('/:id/assign-child', assignSponsorToChild)
 router.delete('/:id', deleteSponsor)
+router.patch('/:id/password', updateSponsorPassword)
 
 export default router

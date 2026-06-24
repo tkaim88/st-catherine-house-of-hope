@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs'
 import { pool } from '../config/database.js'
 
 function formatSponsor(row) {
@@ -303,6 +304,59 @@ export const assignSponsorToChild = async (req, res) => {
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Failed to assign sponsor.' })
+  }
+}
+
+export const updateSponsorPassword = async (req, res) => {
+  try {
+    const sponsorId = Number(req.params.id)
+    const { password } = req.body
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({
+        message: 'Sponsor password must be at least 6 characters long.',
+      })
+    }
+
+    const sponsorResult = await pool.query(
+      `
+      SELECT *
+      FROM sponsors
+      WHERE id = $1
+      `,
+      [sponsorId]
+    )
+
+    if (sponsorResult.rows.length === 0) {
+      return res.status(404).json({
+        message: 'Sponsor not found.',
+      })
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10)
+
+    const result = await pool.query(
+      `
+      UPDATE sponsors
+      SET password_hash = $1,
+          failed_login_attempts = 0,
+          locked_until = NULL,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING *
+      `,
+      [passwordHash, sponsorId]
+    )
+
+    res.json({
+      message: 'Sponsor portal password updated successfully.',
+      data: formatSponsor(result.rows[0]),
+    })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({
+      message: 'Failed to update sponsor portal password.',
+    })
   }
 }
 
