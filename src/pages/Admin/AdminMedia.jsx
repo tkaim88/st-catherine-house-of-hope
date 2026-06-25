@@ -5,6 +5,7 @@ import { API_BASE_URL } from '../../config/api'
 
 function AdminMedia() {
   const [mediaFiles, setMediaFiles] = useState([])
+  const [selectedMediaId, setSelectedMediaId] = useState(null)
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -45,6 +46,28 @@ function AdminMedia() {
 
   function handleFileChange(event) {
     setSelectedFile(event.target.files[0])
+  }
+
+  function toggleMediaDetails(id) {
+    setSelectedMediaId((currentId) => (currentId === id ? null : id))
+  }
+
+  function formatDate(dateValue) {
+    if (!dateValue) return 'Not recorded'
+
+    return new Date(dateValue).toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    })
+  }
+
+  function formatFileSize(size) {
+    if (!size) return 'Unknown size'
+
+    const sizeInMb = size / (1024 * 1024)
+
+    return `${sizeInMb.toFixed(2)} MB`
   }
 
   async function handleUpload(event) {
@@ -194,48 +217,81 @@ function AdminMedia() {
               <p>No media files uploaded yet.</p>
             )}
 
-            <div className="children-card-grid">
-              {mediaFiles.map((file) => (
-                <article className="child-card" key={file.id}>
-                  <img
-                    src={file.publicUrl}
-                    alt={file.title}
-                    className="child-card__image"
-                  />
+            <div className="media-floating-grid">
+              {mediaFiles.map((file) => {
+                const isSelected = selectedMediaId === file.id
 
-                  <div className="child-card__content">
-                    <h3>{file.title}</h3>
-                    <p>{file.description || 'No description added.'}</p>
+                return (
+                  <article
+                    className={`media-floating-card ${
+                      isSelected ? 'media-floating-card--active' : ''
+                    }`}
+                    key={file.id}
+                  >
+                    <button
+                      type="button"
+                      className="media-floating-card__image-button"
+                      onClick={() => toggleMediaDetails(file.id)}
+                      aria-label={`View details for ${file.title}`}
+                    >
+                      <img
+                        src={file.publicUrl}
+                        alt={file.title}
+                        className="media-floating-card__image"
+                      />
 
-                    <p>
-                      <strong>Category:</strong> {file.category}
-                    </p>
+                      <span className="media-floating-card__badge">
+                        {file.category}
+                      </span>
+                    </button>
 
-                    <p>
-                      <strong>File:</strong> {file.originalFilename}
-                    </p>
+                    {isSelected && (
+                      <div className="media-floating-card__details">
+                        <h3>{file.title}</h3>
 
-                    <div className="admin-actions">
-                      <a
-                        className="btn btn--secondary"
-                        href={file.publicUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        View
-                      </a>
+                        <p>
+                          {file.description || 'No description added.'}
+                        </p>
 
-                      <button
-                        className="btn btn--danger"
-                        type="button"
-                        onClick={() => deleteMediaFile(file.id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              ))}
+                        <div className="media-floating-card__meta">
+                          <span>
+                            <strong>File:</strong> {file.originalFilename}
+                          </span>
+
+                          <span>
+                            <strong>Size:</strong>{' '}
+                            {formatFileSize(file.fileSize)}
+                          </span>
+
+                          <span>
+                            <strong>Uploaded:</strong>{' '}
+                            {formatDate(file.createdAt)}
+                          </span>
+                        </div>
+
+                        <div className="media-floating-card__actions">
+                          <a
+                            className="btn btn--secondary"
+                            href={file.publicUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            View
+                          </a>
+
+                          <button
+                            className="btn btn--danger"
+                            type="button"
+                            onClick={() => deleteMediaFile(file.id)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </article>
+                )
+              })}
             </div>
           </section>
         </div>
