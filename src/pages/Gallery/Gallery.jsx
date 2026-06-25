@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
+import { API_BASE_URL } from '../../config/api'
 
 function Gallery() {
   const [children, setChildren] = useState([])
@@ -10,7 +11,7 @@ function Gallery() {
 
   async function fetchChildren() {
     try {
-      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/children')
+      const response = await fetch(`${API_BASE_URL}/children`)
 
       if (!response.ok) {
         throw new Error('Failed to load children')

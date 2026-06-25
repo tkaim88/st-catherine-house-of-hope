@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
 import { createActivity } from '../../services/activityService'
+import { API_BASE_URL } from '../../config/api'
 
 function AdminReports() {
   const [volunteers, setVolunteers] = useState([])
@@ -22,11 +23,11 @@ function AdminReports() {
         sponsorsResponse,
         messagesResponse,
       ] = await Promise.all([
-        fetch('https://st-catherine-house-of-hope-api.onrender.com/api/volunteers'),
-        fetch('https://st-catherine-house-of-hope-api.onrender.com/api/donations'),
-        fetch('https://st-catherine-house-of-hope-api.onrender.com/api/children'),
-        fetch('https://st-catherine-house-of-hope-api.onrender.com/api/sponsors'),
-        fetch('https://st-catherine-house-of-hope-api.onrender.com/api/messages'),
+        fetch(`${API_BASE_URL}/volunteers`),
+        fetch(`${API_BASE_URL}/donations`),
+        fetch(`${API_BASE_URL}/children`),
+        fetch(`${API_BASE_URL}/sponsors`),
+        fetch(`${API_BASE_URL}/messages`),
       ])
 
       if (

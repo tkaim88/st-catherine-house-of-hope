@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
+import { API_BASE_URL } from '../../config/api'
 
 function AdminSettings() {
   const navigate = useNavigate()
@@ -48,7 +49,7 @@ function AdminSettings() {
       const adminUser = JSON.parse(localStorage.getItem('adminUser'))
 
       const response = await fetch(
-        'https://st-catherine-house-of-hope-api.onrender.com/api/auth/change-password',
+        `${API_BASE_URL}/auth/change-password`,
         {
           method: 'PATCH',
           headers: {

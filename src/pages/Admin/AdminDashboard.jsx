@@ -3,11 +3,10 @@ import { Link, useNavigate } from 'react-router-dom'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
 import { hasPermission } from '../../utils/adminPermissions'
+import { API_BASE_URL } from '../../config/api'
 
 function AdminDashboard() {
   const navigate = useNavigate()
-
-  const API_BASE_URL = 'https://st-catherine-house-of-hope-api.onrender.com/api'
 
   const [volunteers, setVolunteers] = useState([])
   const [donations, setDonations] = useState([])

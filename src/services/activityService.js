@@ -1,6 +1,8 @@
+import { API_BASE_URL } from '../config/api'
+
 export async function createActivity(action, details) {
   try {
-    await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/activities', {
+    await fetch(`${API_BASE_URL}/activities`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

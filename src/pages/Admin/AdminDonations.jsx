@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
 import { createActivity } from '../../services/activityService'
+import { API_BASE_URL } from '../../config/api'
 
 function AdminDonations() {
   const [donations, setDonations] = useState([])
@@ -95,7 +96,7 @@ function AdminDonations() {
 
   async function fetchDonations() {
     try {
-      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/donations')
+      const response = await fetch(`${API_BASE_URL}/donations`)
 
       if (!response.ok) {
         throw new Error('Failed to load donations')
@@ -116,7 +117,7 @@ function AdminDonations() {
 
     try {
       const response = await fetch(
-        `https://st-catherine-house-of-hope-api.onrender.com/api/donations/${id}`,
+        `${API_BASE_URL}/donations/${id}`,
         {
           method: 'PATCH',
           headers: {
@@ -163,7 +164,7 @@ function AdminDonations() {
 
     try {
       const response = await fetch(
-        `https://st-catherine-house-of-hope-api.onrender.com/api/donations/${id}`,
+        `${API_BASE_URL}/donations/${id}`,
         {
           method: 'DELETE',
         }

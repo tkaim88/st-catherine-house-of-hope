@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
+import { API_BASE_URL } from '../../config/api'
 
 function AdminActivities() {
   const [activities, setActivities] = useState([])
@@ -21,7 +22,7 @@ function AdminActivities() {
 
   async function fetchActivities() {
     try {
-      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/activities')
+      const response = await fetch(`${API_BASE_URL}/activities`)
 
       if (!response.ok) {
         throw new Error('Failed to load activities')

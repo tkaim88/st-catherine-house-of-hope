@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
+import { API_BASE_URL } from '../../config/api'
 
 function AdminDonors() {
   const emptyForm = {
@@ -51,7 +52,7 @@ function AdminDonors() {
 
   async function fetchDonors() {
     try {
-      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/donors')
+      const response = await fetch(`${API_BASE_URL}/donors`)
 
       if (!response.ok) {
         throw new Error('Failed to load donors')
@@ -127,7 +128,7 @@ function AdminDonors() {
 
   async function createDonor() {
     try {
-      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/donors', {
+      const response = await fetch(`${API_BASE_URL}/donors`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -155,7 +156,7 @@ function AdminDonors() {
   async function updateDonor() {
     try {
       const response = await fetch(
-        `https://st-catherine-house-of-hope-api.onrender.com/api/donors/${editingDonor.id}`,
+        `${API_BASE_URL}/donors/${editingDonor.id}`,
         {
           method: 'PATCH',
           headers: {
@@ -195,7 +196,7 @@ function AdminDonors() {
     if (!confirmed) return
 
     try {
-      const response = await fetch(`https://st-catherine-house-of-hope-api.onrender.com/api/donors/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/donors/${id}`, {
         method: 'DELETE',
       })
 

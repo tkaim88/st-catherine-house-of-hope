@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
+import { API_BASE_URL } from '../../config/api'
 
 function AdminMessages() {
   const [messages, setMessages] = useState([])
@@ -42,7 +43,7 @@ function AdminMessages() {
 
   async function fetchMessages() {
     try {
-      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/messages')
+      const response = await fetch(`${API_BASE_URL}/messages`)
 
       if (!response.ok) {
         throw new Error('Failed to load messages')
@@ -65,7 +66,7 @@ function AdminMessages() {
 
   async function updateMessageStatus(id, status) {
     try {
-      const response = await fetch(`https://st-catherine-house-of-hope-api.onrender.com/api/messages/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/messages/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -100,7 +101,7 @@ function AdminMessages() {
     if (!confirmed) return
 
     try {
-      const response = await fetch(`https://st-catherine-house-of-hope-api.onrender.com/api/messages/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/messages/${id}`, {
         method: 'DELETE',
       })
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
+import { API_BASE_URL } from '../../config/api'
 
 function SponsorChild() {
   const { childId } = useParams()
@@ -12,7 +13,7 @@ function SponsorChild() {
 
   async function fetchChild() {
     try {
-      const response = await fetch(`https://st-catherine-house-of-hope-api.onrender.com/api/children/${childId}`)
+      const response = await fetch(`${API_BASE_URL}/children/${childId}`)
 
       if (!response.ok) {
         throw new Error('Child profile not found')

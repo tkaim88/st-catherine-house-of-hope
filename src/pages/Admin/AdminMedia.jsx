@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
+import { API_BASE_URL } from '../../config/api'
 
 function AdminMedia() {
-  const API_BASE_URL = 'https://st-catherine-house-of-hope-api.onrender.com/api'
-
   const [mediaFiles, setMediaFiles] = useState([])
   const [formData, setFormData] = useState({
     title: '',

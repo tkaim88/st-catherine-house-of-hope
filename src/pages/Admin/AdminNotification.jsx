@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
+import { API_BASE_URL } from '../../config/api'
 
 function AdminNotifications() {
   const [notifications, setNotifications] = useState([])
@@ -35,7 +36,7 @@ function AdminNotifications() {
 
   async function fetchNotifications() {
     try {
-      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/notifications')
+      const response = await fetch(`${API_BASE_URL}/notifications`)
 
       if (!response.ok) {
         throw new Error('Failed to load notifications')
@@ -59,7 +60,7 @@ function AdminNotifications() {
   async function updateNotificationStatus(id, status) {
     try {
       const response = await fetch(
-        `https://st-catherine-house-of-hope-api.onrender.com/api/notifications/${id}`,
+        `${API_BASE_URL}/notifications/${id}`,
         {
           method: 'PATCH',
           headers: {
@@ -95,7 +96,7 @@ function AdminNotifications() {
 
     try {
       const response = await fetch(
-        `https://st-catherine-house-of-hope-api.onrender.com/api/notifications/${id}`,
+        `${API_BASE_URL}/notifications/${id}`,
         {
           method: 'DELETE',
         }

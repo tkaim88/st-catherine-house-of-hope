@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
+import { API_BASE_URL } from '../../config/api'
 
 function Donate() {
   const [formData, setFormData] = useState({
@@ -39,7 +40,7 @@ function Donate() {
     setErrorMessage('')
 
     try {
-      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/donations', {
+      const response = await fetch(`${API_BASE_URL}/donations`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

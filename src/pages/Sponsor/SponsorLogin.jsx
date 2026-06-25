@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
+import { API_BASE_URL } from '../../config/api'
 
 function SponsorLogin() {
   const navigate = useNavigate()
@@ -32,7 +33,7 @@ function SponsorLogin() {
 
     try {
       const response = await fetch(
-        'https://st-catherine-house-of-hope-api.onrender.com/api/sponsor-auth/login',
+        `${API_BASE_URL}/sponsor-auth/login`,
         {
           method: 'POST',
           headers: {

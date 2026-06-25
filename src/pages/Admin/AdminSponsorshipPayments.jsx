@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
+import { API_BASE_URL } from '../../config/api'
 
 function AdminSponsorshipPayments() {
   const emptyForm = {
@@ -60,9 +61,9 @@ function AdminSponsorshipPayments() {
     try {
       const [paymentsResponse, sponsorsResponse, childrenResponse] =
         await Promise.all([
-          fetch('https://st-catherine-house-of-hope-api.onrender.com/api/sponsorship-payments'),
-          fetch('https://st-catherine-house-of-hope-api.onrender.com/api/sponsors'),
-          fetch('https://st-catherine-house-of-hope-api.onrender.com/api/children'),
+          fetch(`${API_BASE_URL}/sponsorship-payments`),
+          fetch(`${API_BASE_URL}/sponsors`),
+          fetch(`${API_BASE_URL}/children`),
         ])
 
       if (
@@ -166,7 +167,7 @@ function AdminSponsorshipPayments() {
 
     try {
       const response = await fetch(
-        'https://st-catherine-house-of-hope-api.onrender.com/api/sponsorship-payments',
+        `${API_BASE_URL}/sponsorship-payments`,
         {
           method: 'POST',
           headers: {
@@ -211,7 +212,7 @@ function AdminSponsorshipPayments() {
 
     try {
       const response = await fetch(
-        `https://st-catherine-house-of-hope-api.onrender.com/api/sponsorship-payments/${editingPayment.id}`,
+        `${API_BASE_URL}/sponsorship-payments/${editingPayment.id}`,
         {
           method: 'PATCH',
           headers: {
@@ -264,7 +265,7 @@ function AdminSponsorshipPayments() {
 
     try {
       const response = await fetch(
-        `https://st-catherine-house-of-hope-api.onrender.com/api/sponsorship-payments/${id}`,
+        `${API_BASE_URL}/sponsorship-payments/${id}`,
         {
           method: 'DELETE',
         }

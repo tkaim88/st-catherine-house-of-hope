@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
+import { API_BASE_URL } from '../../config/api'
 
 function AdminSponsorshipApplications() {
   const [applications, setApplications] = useState([])
@@ -41,7 +42,7 @@ function AdminSponsorshipApplications() {
   async function fetchApplications() {
     try {
       const response = await fetch(
-        'https://st-catherine-house-of-hope-api.onrender.com/api/sponsorship-applications'
+        `${API_BASE_URL}/sponsorship-applications`
       )
 
       if (!response.ok) {
@@ -61,7 +62,7 @@ function AdminSponsorshipApplications() {
   async function approveApplication(id) {
     try {
       const response = await fetch(
-        `https://st-catherine-house-of-hope-api.onrender.com/api/sponsorship-applications/${id}/approve`,
+        `${API_BASE_URL}/sponsorship-applications/${id}/approve`,
         {
           method: 'PATCH',
         }
@@ -98,7 +99,7 @@ function AdminSponsorshipApplications() {
   async function rejectApplication(id) {
     try {
       const response = await fetch(
-        `https://st-catherine-house-of-hope-api.onrender.com/api/sponsorship-applications/${id}/reject`,
+        `${API_BASE_URL}/sponsorship-applications/${id}/reject`,
         {
           method: 'PATCH',
         }
@@ -140,7 +141,7 @@ function AdminSponsorshipApplications() {
 
     try {
       const response = await fetch(
-        `https://st-catherine-house-of-hope-api.onrender.com/api/sponsorship-applications/${id}`,
+        `${API_BASE_URL}/sponsorship-applications/${id}`,
         {
           method: 'DELETE',
         }

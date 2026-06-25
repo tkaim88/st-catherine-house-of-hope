@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
+import { API_BASE_URL } from '../../config/api'
 
 function Contact() {
   const [formData, setFormData] = useState({
@@ -32,7 +33,7 @@ function Contact() {
     setErrorMessage('')
 
     try {
-      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/messages', {
+      const response = await fetch(`${API_BASE_URL}/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

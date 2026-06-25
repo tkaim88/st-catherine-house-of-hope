@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
+import { API_BASE_URL } from '../../config/api'
 
 function AdminChildren() {
   const emptyForm = {
@@ -22,8 +23,7 @@ function AdminChildren() {
     status: 'Active',
   }
 
-  const API_BASE_URL = 'https://st-catherine-house-of-hope-api.onrender.com/api'
-
+  
   const [children, setChildren] = useState([])
   const [sponsors, setSponsors] = useState([])
   const [selectedChild, setSelectedChild] = useState(null)

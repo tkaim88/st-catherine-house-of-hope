@@ -3,6 +3,7 @@ import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
 import { createActivity } from '../../services/activityService'
 import { createNotification } from '../../services/notificationService'
+import { API_BASE_URL } from '../../config/api'
 
 function AdminVolunteers() {
   const [volunteers, setVolunteers] = useState([])
@@ -64,7 +65,7 @@ function AdminVolunteers() {
 
   async function fetchVolunteers() {
     try {
-      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/volunteers')
+      const response = await fetch(`${API_BASE_URL}/volunteers`)
 
       if (!response.ok) {
         throw new Error('Failed to load volunteer applications')
@@ -84,7 +85,7 @@ function AdminVolunteers() {
     const volunteer = volunteers.find((item) => item.id === id)
 
     try {
-      const response = await fetch(`https://st-catherine-house-of-hope-api.onrender.com/api/volunteers/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/volunteers/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -141,7 +142,7 @@ function AdminVolunteers() {
     const volunteer = volunteers.find((item) => item.id === id)
 
     try {
-      const response = await fetch(`https://st-catherine-house-of-hope-api.onrender.com/api/volunteers/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/volunteers/${id}`, {
         method: 'DELETE',
       })
 
@@ -180,7 +181,7 @@ function AdminVolunteers() {
     try {
       await Promise.all(
         volunteers.map((volunteer) =>
-          fetch(`https://st-catherine-house-of-hope-api.onrender.com/api/volunteers/${volunteer.id}`, {
+          fetch(`${API_BASE_URL}/volunteers/${volunteer.id}`, {
             method: 'DELETE',
           })
         )

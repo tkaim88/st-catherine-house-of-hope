@@ -1,6 +1,8 @@
+import { API_BASE_URL } from '../config/api'
+
 export async function createNotification(notification) {
   try {
-    await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/notifications', {
+    await fetch(`${API_BASE_URL}/notifications`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

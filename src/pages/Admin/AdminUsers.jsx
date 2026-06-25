@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
+import { API_BASE_URL } from '../../config/api'
 
 function AdminUsers() {
   const navigate = useNavigate()
@@ -85,7 +86,7 @@ function AdminUsers() {
         return
       }
 
-      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/admin-users', {
+      const response = await fetch(`${API_BASE_URL}/admin-users`, {
         headers: getAuthHeaders(),
       })
 
@@ -123,7 +124,7 @@ function AdminUsers() {
     setSuccessMessage('')
 
     try {
-      const response = await fetch('https://st-catherine-house-of-hope-api.onrender.com/api/admin-users', {
+      const response = await fetch(`${API_BASE_URL}/admin-users`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(newAdmin),
@@ -163,7 +164,7 @@ function AdminUsers() {
   async function updateAdminRole(id, role) {
     try {
       const response = await fetch(
-        `https://st-catherine-house-of-hope-api.onrender.com/api/admin-users/${id}/role`,
+        `${API_BASE_URL}/admin-users/${id}/role`,
         {
           method: 'PATCH',
           headers: getAuthHeaders(),
@@ -218,7 +219,7 @@ function AdminUsers() {
 
     try {
       const response = await fetch(
-        `https://st-catherine-house-of-hope-api.onrender.com/api/admin-users/${resetPasswordData.adminId}/password`,
+        `${API_BASE_URL}/admin-users/${resetPasswordData.adminId}/password`,
         {
           method: 'PATCH',
           headers: getAuthHeaders(),
@@ -272,7 +273,7 @@ function AdminUsers() {
 
     try {
       const response = await fetch(
-        `https://st-catherine-house-of-hope-api.onrender.com/api/admin-users/${id}`,
+        `${API_BASE_URL}/admin-users/${id}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
