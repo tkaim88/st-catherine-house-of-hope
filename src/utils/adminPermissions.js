@@ -14,6 +14,7 @@ export const rolePermissions = {
     'notifications',
     'settings',
     'users',
+    'media',
   ],
   admin: [
     'dashboard',
