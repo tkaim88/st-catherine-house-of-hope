@@ -361,6 +361,12 @@ function AdminDashboard() {
                       Admin User Management
                     </Link>
                   )}
+
+                  {hasPermission('media') && (
+                    <Link className="quick-action-card" to="/admin/media">
+                      Media Management
+                    </Link>
+                  )}
                 </div>
               </section>
 

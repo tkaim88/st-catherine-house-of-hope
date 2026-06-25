@@ -18,6 +18,7 @@ import paymentRoutes from './routes/paymentRoutes.js'
 import { testDatabaseConnection } from './config/database.js'
 import sponsorshipRoutes from './routes/sponsorshipRoutes.js'
 import sponsorAuthRoutes from './routes/sponsorAuthRoutes.js'
+import mediaRoutes from './routes/mediaRoutes.js'
 
 dotenv.config()
 
@@ -59,6 +60,7 @@ app.use('/api/notifications', notificationRoutes)
 app.use('/api/payments', paymentRoutes)
 app.use('/api/sponsorships', sponsorshipRoutes)
 app.use('/api/sponsor-auth', sponsorAuthRoutes)
+app.use('/api/media', mediaRoutes)
 app.get('/', (req, res) => {
   res.json({
     message: 'St Catherine House of Hope Backend Running',

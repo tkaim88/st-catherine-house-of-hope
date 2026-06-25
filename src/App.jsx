@@ -30,6 +30,7 @@ import AdminUsers from './pages/Admin/AdminUsers'
 import SponsorLogin from './pages/Sponsor/SponsorLogin'
 import SponsorDashboard from './pages/Sponsor/SponsorDashboard'
 import SponsorProtectedRoute from './components/SponsorProtectedRoute'
+import AdminMedia from './pages/Admin/AdminMedia'
 
 function App() {
   return (
@@ -190,6 +191,15 @@ function App() {
         element={
           <ProtectedRoute requiredPermission="users">
             <AdminUsers />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/media"
+        element={
+          <ProtectedRoute requiredPermission="media">
+            <AdminMedia />
           </ProtectedRoute>
         }
       />
