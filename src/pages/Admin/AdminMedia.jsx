@@ -5,12 +5,16 @@ import { API_BASE_URL } from '../../config/api'
 
 function AdminMedia() {
   const [mediaFiles, setMediaFiles] = useState([])
+  const [children, setChildren] = useState([])
   const [selectedMediaId, setSelectedMediaId] = useState(null)
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     category: 'gallery',
+    relatedId: '',
   })
+
   const [selectedFile, setSelectedFile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [isUploading, setIsUploading] = useState(false)
@@ -35,12 +39,31 @@ function AdminMedia() {
     }
   }
 
+  async function fetchChildren() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/children`)
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to load children')
+      }
+
+      setChildren(data)
+    } catch (error) {
+      console.error(error)
+      setErrorMessage('Could not load children list.')
+    }
+  }
+
   function handleChange(event) {
     const { name, value } = event.target
 
     setFormData((currentData) => ({
       ...currentData,
       [name]: value,
+      ...(name === 'category' && value !== 'child'
+        ? { relatedId: '' }
+        : {}),
     }))
   }
 
@@ -65,9 +88,15 @@ function AdminMedia() {
   function formatFileSize(size) {
     if (!size) return 'Unknown size'
 
-    const sizeInMb = size / (1024 * 1024)
+    return `${(size / (1024 * 1024)).toFixed(2)} MB`
+  }
 
-    return `${sizeInMb.toFixed(2)} MB`
+  function getRelatedChildName(relatedId) {
+    const child = children.find(
+      (childItem) => String(childItem.id) === String(relatedId)
+    )
+
+    return child?.fullName || child?.full_name || 'Not linked'
   }
 
   async function handleUpload(event) {
@@ -75,6 +104,11 @@ function AdminMedia() {
 
     if (!selectedFile) {
       setErrorMessage('Please select an image to upload.')
+      return
+    }
+
+    if (formData.category === 'child' && !formData.relatedId) {
+      setErrorMessage('Please select the child this photo belongs to.')
       return
     }
 
@@ -88,6 +122,11 @@ function AdminMedia() {
       uploadData.append('description', formData.description)
       uploadData.append('category', formData.category)
       uploadData.append('file', selectedFile)
+
+      if (formData.category === 'child') {
+        uploadData.append('relatedType', 'child')
+        uploadData.append('relatedId', formData.relatedId)
+      }
 
       const response = await fetch(`${API_BASE_URL}/media`, {
         method: 'POST',
@@ -105,6 +144,7 @@ function AdminMedia() {
         title: '',
         description: '',
         category: 'gallery',
+        relatedId: '',
       })
       setSelectedFile(null)
       setSuccessMessage('Media file uploaded successfully.')
@@ -149,6 +189,7 @@ function AdminMedia() {
 
   useEffect(() => {
     fetchMediaFiles()
+    fetchChildren()
   }, [])
 
   return (
@@ -195,6 +236,23 @@ function AdminMedia() {
                 <option value="event">Event Photo</option>
                 <option value="project">Project Photo</option>
               </select>
+
+              {formData.category === 'child' && (
+                <select
+                  name="relatedId"
+                  value={formData.relatedId}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select Child</option>
+
+                  {children.map((child) => (
+                    <option key={child.id} value={child.id}>
+                      {child.fullName || child.full_name}
+                    </option>
+                  ))}
+                </select>
+              )}
 
               <input type="file" accept="image/*" onChange={handleFileChange} />
 
@@ -249,9 +307,7 @@ function AdminMedia() {
                       <div className="media-floating-card__details">
                         <h3>{file.title}</h3>
 
-                        <p>
-                          {file.description || 'No description added.'}
-                        </p>
+                        <p>{file.description || 'No description added.'}</p>
 
                         <div className="media-floating-card__meta">
                           <span>
@@ -267,6 +323,13 @@ function AdminMedia() {
                             <strong>Uploaded:</strong>{' '}
                             {formatDate(file.createdAt)}
                           </span>
+
+                          {file.relatedType === 'child' && (
+                            <span>
+                              <strong>Linked Child:</strong>{' '}
+                              {getRelatedChildName(file.relatedId)}
+                            </span>
+                          )}
                         </div>
 
                         <div className="media-floating-card__actions">
